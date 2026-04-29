@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { getSupabaseAdminClient } from "@/lib/supabase-admin";
 
 export type JobApplicationRecord = {
@@ -54,6 +55,7 @@ export async function createJobApplication(input: {
   const { data, error } = await supabase
     .from(tableName)
     .insert({
+      user_id: randomUUID(),
       clerk_user_id: input.clerkUserId,
       company_name: input.companyName,
       job_title: input.jobTitle,

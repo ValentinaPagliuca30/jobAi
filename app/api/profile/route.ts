@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
   emptyApplicationAnswerValues,
@@ -10,12 +11,15 @@ import { getSupabaseAdminClient } from "@/lib/supabase-admin";
 
 const profilesTable = "profiles";
 const answersTable = "profile_answers";
+const profileSelect =
+  "clerk_user_id, full_name, preferred_name, email, phone, location, linkedin_url, github_url, portfolio_url, school, degree, program, graduation_date, work_authorization, sponsorship_answer, gender, race_ethnicity, veteran_status, disability_status";
 
 function toProfileRow(payload: PersistedProfilePayload, clerkUserId: string) {
   return {
     clerk_user_id: clerkUserId,
     full_name: payload.basicInfo.fullName,
     preferred_name: payload.basicInfo.preferredName,
+    email: payload.basicInfo.email,
     phone: payload.basicInfo.phone,
     location: payload.basicInfo.location,
     linkedin_url: payload.basicInfo.linkedinUrl,
@@ -32,6 +36,41 @@ function toProfileRow(payload: PersistedProfilePayload, clerkUserId: string) {
     veteran_status: payload.identityInfo.veteranStatus,
     disability_status: payload.identityInfo.disabilityStatus,
   };
+}
+
+async function saveProfileRow(
+  supabase: ReturnType<typeof getSupabaseAdminClient>,
+  payload: PersistedProfilePayload,
+  clerkUserId: string,
+) {
+  const profileRow = toProfileRow(payload, clerkUserId);
+
+  const { data: updatedRow, error: updateError } = await supabase
+    .from(profilesTable)
+    .update(profileRow)
+    .eq("clerk_user_id", clerkUserId)
+    .select(profileSelect)
+    .maybeSingle();
+
+  if (updateError) {
+    throw updateError;
+  }
+
+  if (updatedRow) {
+    return updatedRow;
+  }
+
+  const { data: insertedRow, error: insertError } = await supabase
+    .from(profilesTable)
+    .insert({ user_id: randomUUID(), ...profileRow })
+    .select(profileSelect)
+    .single();
+
+  if (insertError) {
+    throw insertError;
+  }
+
+  return insertedRow;
 }
 
 function toProfilePayload(input: {
@@ -53,7 +92,7 @@ function toProfilePayload(input: {
       ...emptyBasicProfileValues,
       fullName: profileRow?.full_name ?? "",
       preferredName: profileRow?.preferred_name ?? "",
-      email: "",
+      email: profileRow?.email ?? "",
       phone: profileRow?.phone ?? "",
       location: profileRow?.location ?? "",
       linkedinUrl: profileRow?.linkedin_url ?? "",
@@ -92,9 +131,7 @@ export async function GET() {
 
     const { data: profileRow, error: profileError } = await supabase
       .from(profilesTable)
-      .select(
-        "clerk_user_id, full_name, preferred_name, phone, location, linkedin_url, github_url, portfolio_url, school, degree, program, graduation_date, work_authorization, sponsorship_answer, gender, race_ethnicity, veteran_status, disability_status",
-      )
+      .select(profileSelect)
       .eq("clerk_user_id", userId)
       .maybeSingle();
 
@@ -137,35 +174,46 @@ export async function POST(request: Request) {
     const body = (await request.json()) as PersistedProfilePayload;
     const supabase = getSupabaseAdminClient();
 
-    const { data: profileRow, error: profileError } = await supabase
-      .from(profilesTable)
-      .upsert(toProfileRow(body, userId), { onConflict: "clerk_user_id" })
-      .select(
-        "clerk_user_id, full_name, preferred_name, phone, location, linkedin_url, github_url, portfolio_url, school, degree, program, graduation_date, work_authorization, sponsorship_answer, gender, race_ethnicity, veteran_status, disability_status",
-      )
-      .single();
+    const profileRow = await saveProfileRow(supabase, body, userId);
 
-    if (profileError) {
-      throw profileError;
-    }
+    const savedAnswers = await Promise.all(
+      Object.entries(body.applicationAnswers).map(async ([answerKey, content]) => {
+        const answerRow = {
+          clerk_user_id: userId,
+          answer_key: answerKey,
+          title: answerKey,
+          content,
+        };
 
-    const answerRows = Object.entries(body.applicationAnswers).map(
-      ([answerKey, content]) => ({
-        clerk_user_id: userId,
-        answer_key: answerKey,
-        title: answerKey,
-        content,
+        const { data: updatedAnswer, error: updateError } = await supabase
+          .from(answersTable)
+          .update(answerRow)
+          .eq("clerk_user_id", userId)
+          .eq("answer_key", answerKey)
+          .select("answer_key, content")
+          .maybeSingle();
+
+        if (updateError) {
+          throw updateError;
+        }
+
+        if (updatedAnswer) {
+          return updatedAnswer;
+        }
+
+        const { data: insertedAnswer, error: insertError } = await supabase
+          .from(answersTable)
+          .insert({ user_id: randomUUID(), ...answerRow })
+          .select("answer_key, content")
+          .single();
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        return insertedAnswer;
       }),
     );
-
-    const { data: savedAnswers, error: answersError } = await supabase
-      .from(answersTable)
-      .upsert(answerRows, { onConflict: "clerk_user_id,answer_key" })
-      .select("answer_key, content");
-
-    if (answersError) {
-      throw answersError;
-    }
 
     return NextResponse.json({
       profile: toProfilePayload({ profileRow, answerRows: savedAnswers }),

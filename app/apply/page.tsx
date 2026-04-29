@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, startTransition, useEffect, useState } from "react";
 import { parseJobPostingUrl, type ParsedJobPosting } from "@/lib/job-url";
 
 const checklist = [
@@ -42,24 +42,18 @@ export default function ApplyPage() {
       return;
     }
 
-    setJobUrl(prefilledJobUrl);
-
     const parsed = parseJobPostingUrl(prefilledJobUrl);
-    setParsedPosting(parsed);
+    const nextErrorMessage = !parsed.normalizedUrl
+      ? "Paste a Greenhouse or Lever posting URL to continue."
+      : !parsed.supported
+        ? "This URL is not supported yet. Right now JobPilot only works with Greenhouse and Lever links."
+        : null;
 
-    if (!parsed.normalizedUrl) {
-      setErrorMessage("Paste a Greenhouse or Lever posting URL to continue.");
-      return;
-    }
-
-    if (!parsed.supported) {
-      setErrorMessage(
-        "This URL is not supported yet. Right now JobPilot only works with Greenhouse and Lever links.",
-      );
-      return;
-    }
-
-    setErrorMessage(null);
+    startTransition(() => {
+      setJobUrl(prefilledJobUrl);
+      setParsedPosting(parsed);
+      setErrorMessage(nextErrorMessage);
+    });
   }, []);
 
   async function handleParse(event: FormEvent<HTMLFormElement>) {
