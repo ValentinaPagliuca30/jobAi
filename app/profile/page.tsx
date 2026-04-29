@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   answerBlockDefinitions,
@@ -156,51 +155,30 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
-      <div className="border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-5 sm:px-8 lg:px-10">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-lg font-semibold text-sky-700">
-              J
-            </div>
-            <div>
-              <p className="text-sm font-semibold tracking-tight text-slate-900">
-                JobPilot
-              </p>
-              <p className="text-xs text-slate-500">Profile setup</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            >
-              Dashboard
-            </Link>
-            <button
-              type="button"
-              onClick={handleSaveProfile}
-              disabled={isLoading || isSaving}
-              className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
-            >
-              {isSaving ? "Saving..." : "Save profile"}
-            </button>
-          </div>
-        </div>
-      </div>
-
       <div className="mx-auto flex w-full max-w-7xl flex-col px-6 py-10 sm:px-8 lg:px-10">
         <div className="mb-6 text-sm text-slate-500">
           Home <span className="mx-2">/</span> Profile
         </div>
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-7 py-8 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
-            Profile
-          </p>
-          <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-5xl">
-            Complete your profile once, then reuse it for every application.
-          </h1>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                Profile
+              </p>
+              <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-5xl">
+                Complete your profile once, then reuse it for every application.
+              </h1>
+            </div>
+            <button
+              type="button"
+              onClick={handleSaveProfile}
+              disabled={isLoading || isSaving}
+              className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSaving ? "Saving..." : "Save profile"}
+            </button>
+          </div>
           <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
             Keep this page structured and calm: basic information, uploads, and
             reusable answers. Click one section and show only that section.
