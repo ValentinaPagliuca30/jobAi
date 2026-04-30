@@ -11,6 +11,7 @@ export type JobApplicationRecord = {
   location: string | null;
   status: string;
   appliedAt: string | null;
+  selectedResumeId: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -31,13 +32,15 @@ function mapJobApplicationRecord(
     location: typeof row.location === "string" ? row.location : null,
     status: String(row.status ?? "intake_complete"),
     appliedAt: typeof row.applied_at === "string" ? row.applied_at : null,
+    selectedResumeId:
+      typeof row.selected_resume_id === "string" ? row.selected_resume_id : null,
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   };
 }
 
 const baseSelect =
-  "id, clerk_user_id, company_name, job_title, job_url, ats_type, job_description, location, status, applied_at, created_at, updated_at";
+  "id, clerk_user_id, company_name, job_title, job_url, ats_type, job_description, location, status, applied_at, selected_resume_id, created_at, updated_at";
 
 export async function createJobApplication(input: {
   clerkUserId: string;
@@ -152,4 +155,25 @@ export async function deleteJobApplication(
   if (error) {
     throw error;
   }
+}
+
+export async function setJobApplicationResume(input: {
+  clerkUserId: string;
+  applicationId: string;
+  resumeId: string | null;
+}) {
+  const supabase = getSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from(tableName)
+    .update({ selected_resume_id: input.resumeId })
+    .eq("clerk_user_id", input.clerkUserId)
+    .eq("id", input.applicationId)
+    .select(baseSelect)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return mapJobApplicationRecord(data);
 }
