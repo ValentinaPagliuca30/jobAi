@@ -1,5 +1,4 @@
 import { auth } from "@clerk/nextjs/server";
-import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
   emptyApplicationAnswerValues,
@@ -94,7 +93,7 @@ async function saveProfileRow(
 
   const { data: insertedRow, error: insertError } = await supabase
     .from(profilesTable)
-    .insert({ user_id: randomUUID(), ...profileRow })
+    .insert(profileRow)
     .select(profileSelect)
     .single();
 
@@ -235,7 +234,7 @@ export async function POST(request: Request) {
 
         const { data: insertedAnswer, error: insertError } = await supabase
           .from(answersTable)
-          .insert({ user_id: randomUUID(), ...answerRow })
+          .insert(answerRow)
           .select("answer_key, content")
           .single();
 
