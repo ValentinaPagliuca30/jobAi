@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { describeError } from "@/lib/error";
 import {
   emptyApplicationAnswerValues,
   emptyBasicProfileValues,
@@ -12,38 +13,6 @@ const profilesTable = "profiles";
 const answersTable = "profile_answers";
 const profileSelect =
   "clerk_user_id, full_name, preferred_name, email, phone, location, linkedin_url, github_url, portfolio_url, school, degree, program, graduation_date, work_authorization, sponsorship_answer, gender, race_ethnicity, veteran_status, disability_status";
-
-function describeError(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === "object" && error !== null) {
-    const candidate = error as {
-      message?: unknown;
-      details?: unknown;
-      hint?: unknown;
-      code?: unknown;
-    };
-    const parts: string[] = [];
-    if (typeof candidate.message === "string" && candidate.message.length > 0) {
-      parts.push(candidate.message);
-    }
-    if (typeof candidate.code === "string" && candidate.code.length > 0) {
-      parts.push(`(code: ${candidate.code})`);
-    }
-    if (typeof candidate.details === "string" && candidate.details.length > 0) {
-      parts.push(`details: ${candidate.details}`);
-    }
-    if (typeof candidate.hint === "string" && candidate.hint.length > 0) {
-      parts.push(`hint: ${candidate.hint}`);
-    }
-    if (parts.length > 0) return parts.join(" ");
-    try {
-      return JSON.stringify(error);
-    } catch {
-      // fall through
-    }
-  }
-  return "Unknown error";
-}
 
 function toProfileRow(payload: PersistedProfilePayload, clerkUserId: string) {
   return {

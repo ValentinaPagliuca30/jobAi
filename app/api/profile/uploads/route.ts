@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { describeError } from "@/lib/error";
 import {
   createProfileUpload,
   listProfileUploads,
@@ -22,10 +23,7 @@ export async function GET() {
   } catch (error) {
     console.error("GET /api/profile/uploads failed", error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to load uploads.",
-      },
+      { error: describeError(error) },
       { status: 500 },
     );
   }
@@ -76,10 +74,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("POST /api/profile/uploads failed", error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to upload the file.",
-      },
+      { error: describeError(error) },
       { status: 500 },
     );
   }
