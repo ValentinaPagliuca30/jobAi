@@ -1,11 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { listApplicationAnswers } from "@/lib/application-answers";
+import { listApplicationQuestions } from "@/lib/application-questions-store";
 import { getJobApplicationById } from "@/lib/job-applications";
 import { listProfileUploads } from "@/lib/profile-uploads";
 import { loadProfileForUser } from "@/lib/profile-store";
 import { answerBlockDefinitions } from "@/lib/profile";
 import { ApplicationPrep } from "./application-prep";
+import { ApplicationQuestions } from "./application-questions";
 import { SubmitApplicationButton } from "./submit-application-button";
 
 type ApplicationDetailPageProps = {
@@ -63,11 +65,13 @@ export default async function ApplicationDetailPage({
     );
   }
 
-  const [profile, allUploads, savedAnswers] = await Promise.all([
-    loadProfileForUser(userId),
-    listProfileUploads(userId),
-    listApplicationAnswers({ clerkUserId: userId, applicationId: id }),
-  ]);
+  const [profile, allUploads, savedAnswers, postingQuestions] =
+    await Promise.all([
+      loadProfileForUser(userId),
+      listProfileUploads(userId),
+      listApplicationAnswers({ clerkUserId: userId, applicationId: id }),
+      listApplicationQuestions({ clerkUserId: userId, applicationId: id }),
+    ]);
 
   const resumeOptions = allUploads.filter(
     (upload) => upload.kind === "resume",
@@ -255,6 +259,13 @@ export default async function ApplicationDetailPage({
               resumeOptions={resumeOptions}
               initialResumeId={application.selectedResumeId}
               initialAnswers={savedAnswers}
+            />
+
+            <ApplicationQuestions
+              applicationId={application.id}
+              initialQuestions={postingQuestions}
+              initialAnswers={savedAnswers}
+              profileAnswers={profile.applicationAnswers}
             />
 
             <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">

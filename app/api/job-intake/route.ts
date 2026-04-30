@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { parseJobPostingUrl } from "@/lib/job-url";
 import { fetchJobPostingSnapshot } from "@/lib/job-intake";
 import { createJobApplication } from "@/lib/job-applications";
+import { fetchPostingFromUrl } from "@/lib/job-questions";
+import { replaceApplicationQuestions } from "@/lib/application-questions-store";
 
 export async function POST(request: Request) {
   try {
@@ -69,6 +71,21 @@ export async function POST(request: Request) {
       location: snapshot.location,
       atsType: snapshot.atsType,
     });
+
+    // Best-effort: pull the application questions from the ATS so the user
+    // sees them on the detail page. Failures here should not block intake.
+    try {
+      const posting = await fetchPostingFromUrl(snapshot.normalizedUrl);
+      if (posting && posting.questions.length > 0) {
+        await replaceApplicationQuestions({
+          clerkUserId: userId,
+          applicationId: application.id,
+          questions: posting.questions,
+        });
+      }
+    } catch (questionError) {
+      console.warn("Question scrape failed", questionError);
+    }
 
     return NextResponse.json({
       application: {
