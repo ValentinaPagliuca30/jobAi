@@ -3,16 +3,6 @@
 import Link from "next/link";
 import { FormEvent, startTransition, useEffect, useState } from "react";
 import { parseJobPostingUrl, type ParsedJobPosting } from "@/lib/job-url";
-import { Button, buttonClasses } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 const checklist = [
   "Paste a supported Greenhouse or Lever URL",
@@ -91,7 +81,9 @@ export default function ApplyPage() {
     try {
       const response = await fetch("/api/job-intake", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+        },
         body: JSON.stringify({ jobUrl: parsed.normalizedUrl }),
       });
 
@@ -117,155 +109,184 @@ export default function ApplyPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10">
-      <div className="flex flex-col gap-2">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Apply flow
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
-          Paste the posting. Keep the rest focused.
-        </h1>
-        <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-          One link in. We parse the company and role, create a draft, and
-          unlock calibration so the application can use your saved profile.
-        </p>
-      </div>
+    <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
+      <div className="mx-auto flex w-full max-w-7xl flex-col px-6 py-10 sm:px-8 lg:px-10">
+        <div className="mb-6 text-sm text-slate-500">
+          <Link href="/" className="hover:underline">
+            Home
+          </Link>
+          <span className="mx-2">/</span>
+          Apply
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Job intake</CardTitle>
-          <CardDescription>
-            Supports <code className="text-xs">jobs.lever.co</code> and{" "}
-            <code className="text-xs">boards.greenhouse.io</code>.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleParse} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="apply-url">Job URL</Label>
-              <Input
-                id="apply-url"
+        <section className="rounded-[2rem] border border-slate-200 bg-white px-7 py-8 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+            Apply Flow
+          </p>
+          <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-5xl">
+            Paste the posting. Keep the rest focused.
+          </h1>
+          <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
+            One link in. We parse the company and role, create a draft, and
+            unlock calibration so the application can use your saved profile.
+          </p>
+
+          <form onSubmit={handleParse} className="mt-8 grid gap-3">
+            <label className="block text-sm font-medium text-slate-800">
+              Job URL
+              <input
                 value={jobUrl}
                 onChange={(event) => setJobUrl(event.target.value)}
                 placeholder="https://boards.greenhouse.io/... or https://jobs.lever.co/..."
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300"
               />
-            </div>
-            <div>
-              <Button type="submit" disabled={isSubmitting}>
+            </label>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-full bg-slate-950 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
                 {isSubmitting ? "Fetching posting…" : "Parse posting"}
-              </Button>
+              </button>
+              <p className="text-xs text-slate-500">
+                Supported: <code>jobs.lever.co/...</code> and{" "}
+                <code>boards.greenhouse.io/...</code>
+              </p>
             </div>
             {errorMessage ? (
-              <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <p className="rounded-2xl bg-[var(--peach)] px-4 py-3 text-sm text-[var(--ink)]">
                 {errorMessage}
               </p>
             ) : null}
           </form>
-        </CardContent>
-      </Card>
+        </section>
 
-      <div className="grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>How this works</CardTitle>
-            <CardDescription>Keep the first step simple.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ol className="flex flex-col gap-2 text-sm">
-              {checklist.map((item, idx) => (
+        <section className="mt-6 grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">
+              How this works
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+              Keep the first step simple.
+            </h2>
+            <ul className="mt-5 space-y-3 text-sm leading-7 text-slate-600">
+              {checklist.map((item) => (
                 <li
                   key={item}
-                  className="flex items-start gap-3 rounded-md border border-border bg-muted/40 px-3 py-2"
+                  className="rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200"
                 >
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
-                    {idx + 1}
-                  </span>
-                  <span>{item}</span>
+                  {item}
                 </li>
               ))}
-            </ol>
-          </CardContent>
-        </Card>
+            </ul>
+          </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {application
-                ? "Draft created. Continue with calibration."
-                : "Validate the URL before you continue."}
-            </CardTitle>
-            <CardDescription>Posting intake</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">
+                  Posting intake
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                  {application
+                    ? "Draft created. Continue with calibration."
+                    : "Validate the URL before you continue."}
+                </h2>
+              </div>
+            </div>
+
             {parsedPosting ? (
-              <div className="rounded-md border border-border bg-muted/40 p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Parsed result
-                </p>
-                <dl className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <ParsedField label="ATS" value={parsedPosting.atsType} />
-                  <ParsedField
-                    label="Company"
-                    value={parsedPosting.companyName ?? "Not detected"}
-                  />
-                  <ParsedField
-                    label="Role"
-                    value={parsedPosting.roleTitle ?? "Not detected"}
-                  />
-                  <ParsedField
-                    label="Status"
-                    value={
-                      parsedPosting.supported
-                        ? "Ready for calibration"
-                        : "Needs parser work"
-                    }
-                  />
-                </dl>
-                <p className="mt-3 break-all text-xs text-muted-foreground">
-                  {parsedPosting.normalizedUrl}
-                </p>
+              <div className="mt-5 space-y-5">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">
+                    Parsed result
+                  </p>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs font-medium text-slate-500">ATS</p>
+                      <p className="mt-1 text-base font-semibold text-slate-900">
+                        {parsedPosting.atsType}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500">
+                        Company
+                      </p>
+                      <p className="mt-1 text-base font-semibold text-slate-900">
+                        {parsedPosting.companyName ?? "Not detected"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500">Role</p>
+                      <p className="mt-1 text-base font-semibold text-slate-900">
+                        {parsedPosting.roleTitle ?? "Not detected"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500">
+                        Status
+                      </p>
+                      <p className="mt-1 text-base font-semibold text-slate-900">
+                        {parsedPosting.supported
+                          ? "Ready for calibration"
+                          : "Needs parser work"}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-4 break-all text-xs text-slate-500">
+                    {parsedPosting.normalizedUrl}
+                  </p>
+                </div>
+
+                {application ? (
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                      Draft created
+                    </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-2xl bg-white px-4 py-3">
+                        <p className="text-xs font-medium text-slate-500">
+                          Location
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-slate-900">
+                          {application.location ?? "Not detected"}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl bg-white px-4 py-3">
+                        <p className="text-xs font-medium text-slate-500">
+                          Record
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-slate-900">
+                          {application.status}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-4 line-clamp-4 text-sm leading-7 text-slate-700">
+                      {application.jobDescription}
+                    </p>
+                    <Link
+                      href={`/applications/${application.id}`}
+                      className="mt-5 inline-flex rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    >
+                      Continue to draft →
+                    </Link>
+                  </div>
+                ) : (
+                  <p className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5 text-sm leading-7 text-slate-600">
+                    Once the URL is accepted, JobPilot creates a draft and
+                    unlocks the rest of the application flow.
+                  </p>
+                )}
               </div>
             ) : (
-              <p className="rounded-md border border-dashed border-border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
+              <p className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
                 Paste a posting URL above to see the parsed result here.
               </p>
             )}
-
-            {application ? (
-              <div className="rounded-md border border-success/30 bg-success/10 p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-success">
-                  Draft created
-                </p>
-                <dl className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <ParsedField
-                    label="Location"
-                    value={application.location ?? "Not detected"}
-                  />
-                  <ParsedField label="Record" value={application.status} />
-                </dl>
-                <p className="mt-3 line-clamp-4 text-sm text-muted-foreground">
-                  {application.jobDescription}
-                </p>
-                <Link
-                  href={`/applications/${application.id}`}
-                  className={buttonClasses("default", "md", "mt-4")}
-                >
-                  Continue to draft →
-                </Link>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
-    </div>
-  );
-}
-
-function ParsedField({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5 text-sm font-medium">{value}</dd>
-    </div>
+    </main>
   );
 }

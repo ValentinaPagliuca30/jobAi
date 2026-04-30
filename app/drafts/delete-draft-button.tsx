@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 
 type DeleteDraftButtonProps = {
   applicationId: string;
 };
 
-export function DeleteDraftButton({ applicationId }: DeleteDraftButtonProps) {
+export function DeleteDraftButton({
+  applicationId,
+}: DeleteDraftButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -38,13 +39,13 @@ export function DeleteDraftButton({ applicationId }: DeleteDraftButtonProps) {
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
+    <button
+      type="button"
       onClick={handleDelete}
       disabled={isDeleting}
+      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
     >
-      {isDeleting ? "Deleting…" : "Delete"}
-    </Button>
+      {isDeleting ? "Deleting..." : "Delete"}
+    </button>
   );
 }
