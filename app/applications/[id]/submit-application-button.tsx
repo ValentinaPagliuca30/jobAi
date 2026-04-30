@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 type SubmitApplicationButtonProps = {
   applicationId: string;
@@ -21,9 +22,7 @@ export function SubmitApplicationButton({
     try {
       const response = await fetch("/api/submitted-applications", {
         method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({ applicationId }),
       });
 
@@ -35,7 +34,7 @@ export function SubmitApplicationButton({
         );
       }
 
-      setMessage("Application submitted and saved to Succeed.");
+      setMessage("Application submitted and saved to Submitted.");
       router.refresh();
     } catch (error) {
       setMessage(
@@ -49,17 +48,14 @@ export function SubmitApplicationButton({
   }
 
   return (
-    <div className="mt-5">
-      <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={isSubmitting}
-        className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-60"
-      >
-        {isSubmitting ? "Submitting..." : "Submit application"}
-      </button>
+    <div className="flex flex-col items-end gap-2">
+      <Button onClick={handleSubmit} disabled={isSubmitting}>
+        {isSubmitting ? "Submitting…" : "Submit application"}
+      </Button>
       {message ? (
-        <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{message}</p>
+        <p className="max-w-xs text-right text-xs text-muted-foreground">
+          {message}
+        </p>
       ) : null}
     </div>
   );

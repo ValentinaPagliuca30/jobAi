@@ -6,6 +6,16 @@ import {
   type ApplicationAnswerRecord,
 } from "@/lib/application-answers";
 import type { ProfileUploadRecord } from "@/lib/profile-uploads";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 type ApplicationPrepProps = {
   applicationId: string;
@@ -104,86 +114,84 @@ export function ApplicationPrep({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-          Resume for this application
-        </p>
-        {resumeOptions.length === 0 ? (
-          <p className="mt-3 text-sm text-slate-600">
-            No resumes uploaded yet. Add one from{" "}
-            <a href="/profile" className="font-medium text-sky-700 underline">
-              Profile → Uploads
-            </a>
-            .
-          </p>
-        ) : (
-          <select
-            value={resumeId ?? ""}
-            onChange={(event) => handleResumeChange(event.target.value)}
-            disabled={isSavingResume}
-            className="mt-3 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900"
-          >
-            <option value="">— No resume selected —</option>
-            {resumeOptions.map((resume) => (
-              <option key={resume.id} value={resume.id}>
-                {resume.originalFilename}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+    <div className="flex flex-col gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Resume for this application</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {resumeOptions.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No resumes uploaded yet. Add one from{" "}
+              <a href="/profile" className="underline">
+                Profile → Uploads
+              </a>
+              .
+            </p>
+          ) : (
+            <select
+              value={resumeId ?? ""}
+              onChange={(event) => handleResumeChange(event.target.value)}
+              disabled={isSavingResume}
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">— No resume selected —</option>
+              {resumeOptions.map((resume) => (
+                <option key={resume.id} value={resume.id}>
+                  {resume.originalFilename}
+                </option>
+              ))}
+            </select>
+          )}
+        </CardContent>
+      </Card>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <Card>
+        <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Calibration answers
-            </p>
-            <p className="mt-1 text-sm text-slate-600">
+            <CardTitle className="text-base">Calibration answers</CardTitle>
+            <CardDescription>
               Specific to this posting. Used to tailor the AI draft.
-            </p>
+            </CardDescription>
           </div>
-          <button
-            type="button"
+          <Button
+            size="sm"
             onClick={handleSaveAnswers}
             disabled={isSavingAnswers}
-            className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-60"
           >
             {isSavingAnswers ? "Saving…" : "Save answers"}
-          </button>
-        </div>
-
-        <div className="mt-4 space-y-4">
-          {calibrationQuestions.map((question) => (
-            <label
-              key={question.key}
-              className="block text-sm font-medium text-slate-800"
-            >
-              {question.text}
-              <textarea
-                value={answers[question.key] ?? ""}
-                onChange={(event) =>
-                  setAnswers((current) => ({
-                    ...current,
-                    [question.key]: event.target.value,
-                  }))
-                }
-                placeholder={question.placeholder}
-                className="mt-2 min-h-28 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900"
-              />
-            </label>
-          ))}
-        </div>
-      </div>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-4">
+            {calibrationQuestions.map((question) => (
+              <div key={question.key} className="flex flex-col gap-2">
+                <Label htmlFor={`q-${question.key}`}>{question.text}</Label>
+                <Textarea
+                  id={`q-${question.key}`}
+                  value={answers[question.key] ?? ""}
+                  onChange={(event) =>
+                    setAnswers((current) => ({
+                      ...current,
+                      [question.key]: event.target.value,
+                    }))
+                  }
+                  placeholder={question.placeholder}
+                  className="min-h-28"
+                />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {statusMessage ? (
-        <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+        <p className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
           {statusMessage}
         </p>
       ) : null}
       {errorMessage ? (
-        <p className="rounded-2xl bg-[var(--peach)] px-4 py-3 text-sm text-[var(--ink)]">
+        <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {errorMessage}
         </p>
       ) : null}

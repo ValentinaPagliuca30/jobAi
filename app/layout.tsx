@@ -8,6 +8,8 @@ import {
 } from "@clerk/nextjs";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SidebarNav } from "@/components/sidebar-nav";
+import { buttonClasses } from "@/components/ui/button";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,61 +38,72 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
+      <body className="min-h-full bg-background text-foreground">
         <ClerkProvider>
-          <div className="border-b border-slate-200 bg-white/95 backdrop-blur">
-            <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-8 lg:px-10">
-              <div>
-                <p className="text-sm font-semibold tracking-tight text-slate-900">
-                  JobPilot
-                </p>
-                <p className="text-xs text-slate-500">
-                  Save your profile once. Reuse it for every application.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Show
-                  when="signed-in"
-                  fallback={
-                    <>
-                      <SignInButton mode="redirect" />
-                      <SignUpButton mode="redirect" />
-                    </>
-                  }
-                >
-                  <div className="flex items-center gap-3">
-                    <Link
-                      href="/"
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                    >
-                      Dashboard
+          <Show
+            when="signed-in"
+            fallback={
+              <div className="flex min-h-screen flex-col">
+                <header className="border-b border-border">
+                  <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
+                    <Link href="/" className="flex flex-col">
+                      <span className="text-sm font-semibold tracking-tight">
+                        JobPilot
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Save your profile once. Reuse it for every application.
+                      </span>
                     </Link>
-                    <Link
-                      href="/succeed"
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                    >
-                      Succeed
-                    </Link>
-                    <Link
-                      href="/drafts"
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                    >
-                      Drafts
-                    </Link>
-                    <Link
-                      href="/profile"
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                    >
-                      Profile
-                    </Link>
-                    <UserButton />
+                    <div className="flex items-center gap-2">
+                      <SignInButton mode="redirect">
+                        <button className={buttonClasses("ghost", "sm")}>
+                          Sign in
+                        </button>
+                      </SignInButton>
+                      <SignUpButton mode="redirect">
+                        <button className={buttonClasses("default", "sm")}>
+                          Sign up
+                        </button>
+                      </SignUpButton>
+                    </div>
                   </div>
-                </Show>
+                </header>
+                <main className="flex-1">{children}</main>
+              </div>
+            }
+          >
+            <div className="flex min-h-screen">
+              <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card md:flex">
+                <div className="flex h-14 items-center border-b border-border px-4">
+                  <Link href="/" className="flex flex-col">
+                    <span className="text-sm font-semibold tracking-tight">
+                      JobPilot
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      Apply once, reuse everywhere
+                    </span>
+                  </Link>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3">
+                  <SidebarNav />
+                </div>
+                <div className="border-t border-border p-3">
+                  <UserButton
+                    appearance={{ elements: { rootBox: "w-full" } }}
+                  />
+                </div>
+              </aside>
+              <div className="flex flex-1 flex-col">
+                <header className="flex h-14 items-center justify-between border-b border-border bg-card px-4 md:hidden">
+                  <Link href="/" className="text-sm font-semibold">
+                    JobPilot
+                  </Link>
+                  <UserButton />
+                </header>
+                <main className="flex-1">{children}</main>
               </div>
             </div>
-          </div>
-          {children}
+          </Show>
         </ClerkProvider>
       </body>
     </html>

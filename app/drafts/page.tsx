@@ -2,6 +2,23 @@ import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { DeleteDraftButton } from "./delete-draft-button";
 import { listDraftJobApplications } from "@/lib/job-applications";
+import { buttonClasses } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 function formatDraftDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -46,21 +63,19 @@ export default async function DraftsPage() {
 
   if (!userId) {
     return (
-      <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
-        <div className="mx-auto flex w-full max-w-7xl flex-col px-6 py-10 sm:px-8 lg:px-10">
-          <section className="rounded-[2rem] border border-slate-200 bg-white px-7 py-8 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
-              Drafts
-            </p>
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-5xl">
-              Sign in to see your drafts.
-            </h1>
-            <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10">
+        <Card>
+          <CardHeader>
+            <CardDescription>Drafts</CardDescription>
+            <CardTitle className="text-3xl">Sign in to see your drafts.</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
               Unfinished applications appear here once you log in.
             </p>
-          </section>
-        </div>
-      </main>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -72,149 +87,108 @@ export default async function DraftsPage() {
     monthly.find((entry) => entry.key === thisMonthKey)?.count ?? 0;
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
-      <div className="mx-auto flex w-full max-w-7xl flex-col px-6 py-10 sm:px-8 lg:px-10">
-        <div className="mb-6 text-sm text-slate-500">
-          Home <span className="mx-2">/</span> Drafts
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Drafts
+          </p>
+          <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
+            Resume unfinished applications.
+          </h1>
         </div>
+        <Link href="/apply" className={buttonClasses("default", "md")}>
+          New draft
+        </Link>
+      </div>
 
-        <section className="rounded-[2rem] border border-slate-200 bg-white px-7 py-8 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
-                Drafts
-              </p>
-              <h1 className="mt-3 text-4xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-5xl">
-                Resume unfinished applications.
-              </h1>
-            </div>
-            <Link
-              href="/apply"
-              className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
-            >
-              New draft
-            </Link>
-          </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard label="Open drafts" value={drafts.length} />
+        <StatCard label="This month" value={thisMonthCount} />
+        <StatCard label="Months tracked" value={monthly.length} />
+      </div>
 
-          <div className="mt-7 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Open drafts
-              </p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-                {drafts.length}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                This month
-              </p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-                {thisMonthCount}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Months tracked
-              </p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-                {monthly.length}
-              </p>
-            </div>
-          </div>
+      {monthly.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {monthly.map((entry) => (
+            <Badge key={entry.key} variant="secondary">
+              {entry.label} · {entry.count}
+            </Badge>
+          ))}
+        </div>
+      ) : null}
 
-          {monthly.length > 0 ? (
-            <div className="mt-5 flex flex-wrap gap-2">
-              {monthly.map((entry) => (
-                <span
-                  key={entry.key}
-                  className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700"
-                >
-                  {entry.label} · {entry.count}
-                </span>
-              ))}
-            </div>
-          ) : null}
-        </section>
-
-        <section className="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <Card>
+        <CardContent className="p-0">
           {drafts.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left">
-                <thead>
-                  <tr className="border-b border-slate-200">
-                    <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                      Company
-                    </th>
-                    <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                      Location
-                    </th>
-                    <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                      Position
-                    </th>
-                    <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                      Created
-                    </th>
-                    <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                      Status
-                    </th>
-                    <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 text-right">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {drafts.map((draft) => (
-                    <tr
-                      key={draft.id}
-                      className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60"
-                    >
-                      <td className="px-3 py-4 font-medium text-slate-900">
-                        {draft.companyName || "—"}
-                      </td>
-                      <td className="px-3 py-4 text-slate-600">
-                        {draft.location ?? "—"}
-                      </td>
-                      <td className="px-3 py-4 text-slate-700">
-                        {draft.jobTitle || "—"}
-                      </td>
-                      <td className="px-3 py-4 text-slate-600">
-                        {formatDraftDate(draft.createdAt)}
-                      </td>
-                      <td className="px-3 py-4">
-                        <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-                          {statusLabel(draft.status)}
-                        </span>
-                      </td>
-                      <td className="px-3 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <Link
-                            href={`/applications/${draft.id}`}
-                            className="rounded-full bg-slate-950 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800"
-                          >
-                            Continue
-                          </Link>
-                          <DeleteDraftButton applicationId={draft.id} />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Company</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Position</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {drafts.map((draft) => (
+                  <TableRow key={draft.id}>
+                    <TableCell className="font-medium">
+                      {draft.companyName || "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {draft.location ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {draft.jobTitle || "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatDraftDate(draft.createdAt)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="warning">{statusLabel(draft.status)}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/applications/${draft.id}`}
+                          className={buttonClasses("default", "sm")}
+                        >
+                          Continue
+                        </Link>
+                        <DeleteDraftButton applicationId={draft.id} />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center">
-              <p className="text-sm leading-7 text-slate-600">
-                No drafts yet. Start a new application from{" "}
-                <Link href="/apply" className="font-medium text-sky-700 underline">
-                  /apply
-                </Link>{" "}
-                and unfinished records will appear here automatically.
-              </p>
+            <div className="rounded-md border border-dashed border-border bg-muted/30 p-10 text-center text-sm text-muted-foreground">
+              No drafts yet. Start a new application from{" "}
+              <Link href="/apply" className="underline">
+                /apply
+              </Link>{" "}
+              and unfinished records will appear here automatically.
             </div>
           )}
-        </section>
-      </div>
-    </main>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: number }) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col gap-1 p-6">
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+        <p className="text-3xl font-semibold tracking-tight">{value}</p>
+      </CardContent>
+    </Card>
   );
 }

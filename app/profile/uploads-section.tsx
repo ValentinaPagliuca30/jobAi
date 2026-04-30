@@ -6,6 +6,14 @@ import {
   type ProfileUploadRecord,
   type UploadKind,
 } from "@/lib/profile-uploads";
+import { Button, buttonClasses } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const kindLabels: Record<UploadKind, { title: string; description: string }> = {
   resume: {
@@ -85,39 +93,37 @@ export function UploadsSection() {
   }
 
   return (
-    <section className="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-700">
-        Uploads
-      </p>
-      <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-        Documents to reuse
-      </h2>
-      <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-        Files saved here are stored privately on Supabase Storage and reused
-        when you start an application.
-      </p>
+    <Card>
+      <CardHeader>
+        <CardTitle>Documents</CardTitle>
+        <CardDescription>
+          Files saved here are stored privately on Supabase Storage and reused
+          when you start an application.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {loadError ? (
+          <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {loadError}
+          </p>
+        ) : null}
 
-      {loadError ? (
-        <p className="mt-4 rounded-2xl bg-[var(--peach)] px-4 py-3 text-sm text-[var(--ink)]">
-          {loadError}
-        </p>
-      ) : null}
-
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        {uploadKinds.map((kind) => (
-          <UploadCard
-            key={kind}
-            kind={kind}
-            title={kindLabels[kind].title}
-            description={kindLabels[kind].description}
-            uploads={uploads.filter((upload) => upload.kind === kind)}
-            isLoading={isLoading}
-            onUploaded={handleAddUpload}
-            onRemoved={handleRemoveUpload}
-          />
-        ))}
-      </div>
-    </section>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {uploadKinds.map((kind) => (
+            <UploadCard
+              key={kind}
+              kind={kind}
+              title={kindLabels[kind].title}
+              description={kindLabels[kind].description}
+              uploads={uploads.filter((upload) => upload.kind === kind)}
+              isLoading={isLoading}
+              onUploaded={handleAddUpload}
+              onRemoved={handleRemoveUpload}
+            />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -144,7 +150,9 @@ function UploadCard({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelected(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -201,42 +209,42 @@ function UploadCard({
   }
 
   return (
-    <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 px-5 py-5">
-      <p className="text-sm font-semibold text-slate-900">{title}</p>
-      <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p>
+    <div className="rounded-md border border-border bg-card p-4">
+      <p className="text-sm font-medium">{title}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{description}</p>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
+      <div className="mt-3 flex flex-wrap items-center gap-3">
         <input
           ref={inputRef}
           type="file"
           onChange={handleFileSelected}
           disabled={isUploading || isLoading}
           accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
-          className="block w-full max-w-full text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-slate-950 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="block w-full max-w-full text-xs text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-primary-foreground hover:file:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
         />
         {isUploading ? (
-          <span className="text-xs font-medium text-slate-500">Uploading…</span>
+          <span className="text-xs text-muted-foreground">Uploading…</span>
         ) : null}
       </div>
 
       {error ? (
-        <p className="mt-3 rounded-2xl bg-[var(--peach)] px-3 py-2 text-xs text-[var(--ink)]">
+        <p className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
           {error}
         </p>
       ) : null}
 
       {uploads.length > 0 ? (
-        <ul className="mt-4 space-y-2">
+        <ul className="mt-4 flex flex-col gap-2">
           {uploads.map((upload) => (
             <li
               key={upload.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white px-4 py-3 ring-1 ring-slate-200"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-background px-3 py-2"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-slate-900">
+                <p className="truncate text-sm font-medium">
                   {upload.originalFilename}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   {formatBytes(upload.sizeBytes)} ·{" "}
                   {new Date(upload.createdAt).toLocaleDateString()}
                 </p>
@@ -247,24 +255,25 @@ function UploadCard({
                     href={upload.downloadUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                    className={buttonClasses("outline", "sm")}
                   >
                     View
                   </a>
                 ) : null}
-                <button
-                  type="button"
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                   onClick={() => handleDelete(upload)}
-                  className="rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50"
                 >
                   Remove
-                </button>
+                </Button>
               </div>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-4 text-xs text-slate-500">No files yet.</p>
+        <p className="mt-3 text-xs text-muted-foreground">No files yet.</p>
       )}
     </div>
   );

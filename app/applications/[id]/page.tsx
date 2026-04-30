@@ -7,6 +7,15 @@ import { loadProfileForUser } from "@/lib/profile-store";
 import { answerBlockDefinitions } from "@/lib/profile";
 import { ApplicationPrep } from "./application-prep";
 import { SubmitApplicationButton } from "./submit-application-button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { buttonClasses } from "@/components/ui/button";
 
 type ApplicationDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -20,18 +29,16 @@ export default async function ApplicationDetailPage({
 
   if (!userId) {
     return (
-      <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
-        <div className="mx-auto flex w-full max-w-6xl flex-col px-6 py-10 sm:px-8 lg:px-10">
-          <section className="rounded-[2rem] border border-slate-200 bg-white px-7 py-8 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
-              Application detail
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-10">
+        <Card>
+          <CardHeader>
+            <CardDescription>Application detail</CardDescription>
+            <CardTitle className="text-2xl">
               Sign in to view this application.
-            </h1>
-          </section>
-        </div>
-      </main>
+            </CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
     );
   }
 
@@ -39,27 +46,24 @@ export default async function ApplicationDetailPage({
 
   if (!application) {
     return (
-      <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
-        <div className="mx-auto flex w-full max-w-6xl flex-col px-6 py-10 sm:px-8 lg:px-10">
-          <section className="rounded-[2rem] border border-slate-200 bg-white px-7 py-8 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
-              Application detail
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950">
-              Application not found.
-            </h1>
-            <p className="mt-3 text-sm leading-7 text-slate-600">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-10">
+        <Card>
+          <CardHeader>
+            <CardDescription>Application detail</CardDescription>
+            <CardTitle className="text-2xl">Application not found.</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
               No record exists for{" "}
-              <span className="font-mono text-slate-900">{id}</span>. Start a
-              new draft from{" "}
-              <Link href="/apply" className="font-medium text-sky-700 underline">
+              <code className="text-xs">{id}</code>. Start a new draft from{" "}
+              <Link href="/apply" className="underline">
                 /apply
               </Link>
               .
             </p>
-          </section>
-        </div>
-      </main>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -98,83 +102,79 @@ export default async function ApplicationDetailPage({
   );
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
-      <div className="mx-auto flex w-full max-w-6xl flex-col px-6 py-10 sm:px-8 lg:px-10">
-        <div className="mb-6 text-sm text-slate-500">
-          <Link href="/drafts" className="hover:underline">
-            Drafts
-          </Link>
-          <span className="mx-2">/</span>
-          {application.companyName || "Application"}
-        </div>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10">
+      <div className="text-sm text-muted-foreground">
+        <Link href="/drafts" className="hover:underline">
+          Drafts
+        </Link>
+        <span className="mx-2">/</span>
+        <span>{application.companyName || "Application"}</span>
+      </div>
 
-        <section className="rounded-[2rem] border border-slate-200 bg-white px-7 py-8 shadow-sm">
+      <Card>
+        <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+            <div className="flex flex-col gap-2">
+              <Badge variant="outline">
                 {application.atsType ?? "Application"}
-              </p>
-              <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+              </Badge>
+              <CardTitle className="text-2xl md:text-3xl">
                 {application.jobTitle || "Untitled role"}
-              </h1>
-              <p className="mt-2 text-base text-slate-600">
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
                 {application.companyName || "Company TBD"}
                 {application.location ? ` · ${application.location}` : ""}
               </p>
-              <p className="mt-2 text-sm">
-                <a
-                  href={application.jobUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sky-700 underline"
-                >
-                  Open posting ↗
-                </a>
-              </p>
+              <a
+                href={application.jobUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-muted-foreground underline"
+              >
+                Open posting ↗
+              </a>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+              <Badge variant="warning">
                 Status: {application.status.replace(/_/g, " ")}
-              </span>
+              </Badge>
               <SubmitApplicationButton applicationId={application.id} />
             </div>
           </div>
-        </section>
+        </CardHeader>
+      </Card>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">
-              What we'll use for this application
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-              Profile preview
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile preview</CardTitle>
+            <CardDescription>
               These values come from your{" "}
-              <Link href="/profile" className="font-medium text-sky-700 underline">
+              <Link href="/profile" className="underline">
                 profile
               </Link>{" "}
               and will be used to autofill standard fields.
-            </p>
-
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-5">
             {filledFields.length > 0 ? (
-              <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+              <dl className="grid gap-3 sm:grid-cols-2">
                 {filledFields.map((field) => (
                   <div
                     key={field.label}
-                    className="rounded-2xl bg-slate-50 px-4 py-3"
+                    className="rounded-md border border-border bg-muted/30 px-3 py-2"
                   >
-                    <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    <dt className="text-xs text-muted-foreground">
                       {field.label}
                     </dt>
-                    <dd className="mt-1 truncate text-sm text-slate-900">
+                    <dd className="mt-0.5 truncate text-sm font-medium">
                       {field.value}
                     </dd>
                   </div>
                 ))}
               </dl>
             ) : (
-              <p className="mt-4 rounded-2xl bg-[var(--peach)] px-4 py-3 text-sm text-[var(--ink)]">
+              <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                 Your profile is empty. Fill it in on{" "}
                 <Link href="/profile" className="font-medium underline">
                   Profile
@@ -184,30 +184,31 @@ export default async function ApplicationDetailPage({
             )}
 
             {missingFields.length > 0 ? (
-              <p className="mt-4 text-xs text-slate-500">
-                Missing:{" "}
-                {missingFields.map((f) => f.label).join(", ")}.
+              <p className="text-xs text-muted-foreground">
+                Missing: {missingFields.map((f) => f.label).join(", ")}.
               </p>
             ) : null}
 
-            <div className="mt-6 rounded-2xl bg-slate-50 px-4 py-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <div className="rounded-md border border-border bg-muted/30 p-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Reusable answers from profile
               </p>
-              <ul className="mt-3 space-y-2 text-sm text-slate-700">
+              <ul className="mt-3 flex flex-col gap-2 text-sm">
                 {answerBlockDefinitions.map((block) => {
                   const value = profile.applicationAnswers[block] ?? "";
                   return (
                     <li
                       key={block}
-                      className="rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200"
+                      className="rounded-md border border-border bg-background px-3 py-2"
                     >
-                      <p className="text-xs font-semibold text-slate-500">
+                      <p className="text-xs font-medium text-muted-foreground">
                         {block}
                       </p>
-                      <p className="mt-1 line-clamp-2 text-sm text-slate-800">
+                      <p className="mt-1 line-clamp-2 text-sm">
                         {value.trim() === "" ? (
-                          <span className="text-slate-400">— empty —</span>
+                          <span className="text-muted-foreground/60">
+                            — empty —
+                          </span>
                         ) : (
                           value
                         )}
@@ -219,17 +220,17 @@ export default async function ApplicationDetailPage({
             </div>
 
             {writingSamples.length > 0 ? (
-              <div className="mt-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Writing samples available
                 </p>
-                <ul className="mt-3 space-y-2">
+                <ul className="mt-3 flex flex-col gap-2">
                   {writingSamples.map((sample) => (
                     <li
                       key={sample.id}
-                      className="flex items-center justify-between rounded-2xl bg-white px-4 py-2 ring-1 ring-slate-200"
+                      className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2"
                     >
-                      <span className="truncate text-sm text-slate-700">
+                      <span className="truncate text-sm">
                         {sample.originalFilename}
                       </span>
                       {sample.downloadUrl ? (
@@ -237,7 +238,7 @@ export default async function ApplicationDetailPage({
                           href={sample.downloadUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-xs font-medium text-sky-700 underline"
+                          className={buttonClasses("outline", "sm")}
                         >
                           View
                         </a>
@@ -247,27 +248,29 @@ export default async function ApplicationDetailPage({
                 </ul>
               </div>
             ) : null}
-          </section>
+          </CardContent>
+        </Card>
 
-          <section className="space-y-6">
-            <ApplicationPrep
-              applicationId={application.id}
-              resumeOptions={resumeOptions}
-              initialResumeId={application.selectedResumeId}
-              initialAnswers={savedAnswers}
-            />
+        <div className="flex flex-col gap-6">
+          <ApplicationPrep
+            applicationId={application.id}
+            resumeOptions={resumeOptions}
+            initialResumeId={application.selectedResumeId}
+            initialAnswers={savedAnswers}
+          />
 
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Job description
-              </p>
-              <p className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap text-sm leading-7 text-slate-700">
+          <Card>
+            <CardHeader>
+              <CardTitle>Job description</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="max-h-72 overflow-y-auto whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
                 {application.jobDescription || "Job description not captured."}
               </p>
-            </div>
-          </section>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

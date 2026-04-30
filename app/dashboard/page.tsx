@@ -1,6 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { listJobApplications } from "@/lib/job-applications";
+import { buttonClasses } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -18,99 +27,108 @@ export default async function DashboardPage() {
     }
   }
 
-  return (
-    <main className="page-shell">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Dashboard</p>
-          <h1 className="page-title">Track drafts, reviews, and submissions.</h1>
-          <p className="page-copy">
-            This screen will become the control center for the final demo:
-            application state, generation history, and quick re-entry into the
-            review flow.
-          </p>
-        </div>
-        <div className="summary-grid">
-          <div className="summary-card">
-            <span>Open drafts</span>
-            <strong>
-              {
-                applications.filter(
-                  (application) => application.status !== "submitted",
-                ).length
-              }
-            </strong>
-          </div>
-          <div className="summary-card">
-            <span>Submitted</span>
-            <strong>
-              {applications.filter(
-                (application) => application.status === "submitted",
-              ).length}
-            </strong>
-          </div>
-          <div className="summary-card">
-            <span>Supported ATS</span>
-            <strong>2</strong>
-          </div>
-        </div>
-      </section>
+  const openCount = applications.filter((a) => a.status !== "submitted").length;
+  const submittedCount = applications.filter(
+    (a) => a.status === "submitted",
+  ).length;
 
-      <section className="content-card">
-        <div className="section-heading">
+  return (
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10">
+      <div className="flex flex-col gap-2">
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Dashboard
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
+          Track drafts, reviews, and submissions.
+        </h1>
+        <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+          Control center for application state, generation history, and quick
+          re-entry into the review flow.
+        </p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard label="Open drafts" value={openCount} />
+        <StatCard label="Submitted" value={submittedCount} />
+        <StatCard label="Supported ATS" value={2} />
+      </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
           <div>
-            <p className="eyebrow">Recent applications</p>
-            <h2>Curated, narrow, and demo-safe.</h2>
+            <CardTitle>Recent applications</CardTitle>
+            <CardDescription>Curated, narrow, and demo-safe.</CardDescription>
           </div>
-          <Link
-            href="/apply"
-            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-          >
+          <Link href="/apply" className={buttonClasses("outline", "sm")}>
             New intake
           </Link>
-        </div>
+        </CardHeader>
+        <CardContent>
+          {errorMessage ? (
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+              <p>
+                Dashboard could not load applications yet. Run the SQL in{" "}
+                <code>supabase/job-applications-migration.sql</code>, then
+                refresh.
+              </p>
+              <p className="mt-2">Database error: {errorMessage}</p>
+            </div>
+          ) : applications.length === 0 ? (
+            <div className="rounded-md border border-dashed border-border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
+              No demo applications yet. Start from{" "}
+              <Link href="/apply" className="underline">
+                /apply
+              </Link>{" "}
+              to parse a posting and create the first record.
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {applications.map((application) => (
+                <li key={application.id}>
+                  <Link
+                    href={`/applications/${application.id}`}
+                    className="flex items-center justify-between gap-4 rounded-md border border-border bg-card px-4 py-3 transition-colors hover:bg-muted/50"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {application.companyName}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {application.jobTitle}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">{application.atsType}</Badge>
+                      <Badge
+                        variant={
+                          application.status === "submitted"
+                            ? "success"
+                            : "secondary"
+                        }
+                      >
+                        {application.status.replace(/_/g, " ")}
+                      </Badge>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
-        {errorMessage ? (
-          <div className="rounded-[1.5rem] border border-[var(--line)] bg-[var(--peach)] px-5 py-5">
-            <p className="text-sm leading-7 text-[var(--ink)]">
-              Dashboard could not load applications yet. Run the SQL in
-              `supabase/job-applications-migration.sql` inside Supabase, then
-              refresh this page.
-            </p>
-            <p className="mt-2 text-sm leading-7 text-[var(--ink)]">
-              Database error: {errorMessage}
-            </p>
-          </div>
-        ) : null}
-
-        {!errorMessage && applications.length > 0 ? (
-          <div className="table-list">
-            {applications.map((application) => (
-              <Link
-                key={application.id}
-                href={`/applications/${application.id}`}
-                className="table-row"
-              >
-                <div>
-                  <h3>{application.companyName}</h3>
-                  <p>{application.jobTitle}</p>
-                </div>
-                <span>{application.atsType}</span>
-                <span className="status-pill">{application.status}</span>
-              </Link>
-            ))}
-          </div>
-        ) : null}
-
-        {!errorMessage && applications.length === 0 ? (
-          <div className="rounded-[1.5rem] border border-[var(--line)] bg-[var(--surface-soft)] px-5 py-5">
-            <p className="text-sm leading-7 text-[var(--muted)]">
-              No demo applications yet. Start from `/apply` to parse a posting
-              and create the first record.
-            </p>
-          </div>
-        ) : null}
-      </section>
-    </main>
+function StatCard({ label, value }: { label: string; value: number }) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col gap-1 p-6">
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+        <p className="text-3xl font-semibold tracking-tight">{value}</p>
+      </CardContent>
+    </Card>
   );
 }

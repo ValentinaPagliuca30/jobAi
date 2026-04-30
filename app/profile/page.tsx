@@ -14,6 +14,18 @@ import {
   type PersistedProfilePayload,
 } from "@/lib/profile";
 import { UploadsSection } from "./uploads-section";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/cn";
 
 type TabKey = "basic" | "uploads" | "answers";
 
@@ -25,17 +37,17 @@ const tabItems: Array<{
   {
     key: "basic",
     title: "Basic information",
-    description: "Contact details, school, eligibility, demographic info",
+    description: "Contact, school, eligibility",
   },
   {
     key: "uploads",
     title: "Uploads",
-    description: "CV, transcript, cover letters, writing samples",
+    description: "CV, transcript, samples",
   },
   {
     key: "answers",
     title: "Application answers",
-    description: "General responses reused across forms",
+    description: "Reusable responses",
   },
 ];
 
@@ -66,9 +78,7 @@ export default function ProfilePage() {
           throw new Error(payload.error || "Failed to load the profile.");
         }
 
-        if (cancelled) {
-          return;
-        }
+        if (cancelled) return;
 
         setBasicInfo(payload.profile.basicInfo);
         setIdentityInfo(payload.profile.identityInfo);
@@ -78,20 +88,15 @@ export default function ProfilePage() {
         if (!cancelled) {
           setHasLoadError(true);
           setStatusMessage(
-            error instanceof Error
-              ? error.message
-              : "Failed to load the profile.",
+            error instanceof Error ? error.message : "Failed to load the profile.",
           );
         }
       } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+        if (!cancelled) setIsLoading(false);
       }
     }
 
     loadProfile();
-
     return () => {
       cancelled = true;
     };
@@ -116,9 +121,7 @@ export default function ProfilePage() {
     try {
       const response = await fetch("/api/profile", {
         method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({
           basicInfo,
           identityInfo,
@@ -135,7 +138,7 @@ export default function ProfilePage() {
         throw new Error(payload.error || "Failed to save the profile.");
       }
 
-      setStatusMessage("Profile saved to the database.");
+      setStatusMessage("Profile saved.");
       setHasLoadError(false);
     } catch (error) {
       setStatusMessage(
@@ -147,176 +150,176 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
-      <div className="mx-auto flex w-full max-w-7xl flex-col px-6 py-10 sm:px-8 lg:px-10">
-        <div className="mb-6 text-sm text-slate-500">
-          Home <span className="mx-2">/</span> Profile
-        </div>
-
-        <section className="rounded-[2rem] border border-slate-200 bg-white px-7 py-8 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
-                Profile
-              </p>
-              <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-5xl">
-                Complete your profile once, then reuse it for every application.
-              </h1>
-            </div>
-            <button
-              type="button"
-              onClick={handleSaveProfile}
-              disabled={isLoading || isSaving}
-              className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSaving ? "Saving..." : "Save profile"}
-            </button>
-          </div>
-          <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
-            Keep this page structured and calm: basic information, uploads, and
-            reusable answers. Click one section and show only that section.
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Profile
           </p>
-          {statusMessage ? (
-            <p className="mt-5 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
-              {statusMessage}
-            </p>
-          ) : null}
-          {hasLoadError ? (
-            <p className="mt-3 rounded-2xl bg-[var(--peach)] px-4 py-3 text-sm text-[var(--ink)]">
-              Run `supabase/profile-migration.sql` in Supabase to align the
-              profile tables with the Clerk-based schema.
-            </p>
-          ) : null}
-        </section>
+          <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
+            Complete your profile once, then reuse it.
+          </h1>
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+            Basic information, uploads, and reusable answers — all in one place.
+          </p>
+        </div>
+        <Button onClick={handleSaveProfile} disabled={isLoading || isSaving}>
+          {isSaving ? "Saving…" : "Save profile"}
+        </Button>
+      </div>
 
-        <section className="mt-6 rounded-[2rem] border border-slate-200 bg-white p-3 shadow-sm">
-          <div className="grid gap-3 md:grid-cols-3">
-            {tabItems.map((tab) => {
-              const isActive = activeTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => setActiveTab(tab.key)}
-                  className={
-                    isActive
-                      ? "rounded-2xl bg-slate-950 px-5 py-4 text-left text-white"
-                      : "rounded-2xl bg-slate-50 px-5 py-4 text-left text-slate-900 transition hover:bg-slate-100"
-                  }
-                >
-                  <div className="text-sm font-semibold">{tab.title}</div>
-                  <div className={isActive ? "mt-1 text-sm text-white/70" : "mt-1 text-sm text-slate-500"}>
-                    {tab.description}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
+      {statusMessage ? (
+        <p className="rounded-md border border-border bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
+          {statusMessage}
+        </p>
+      ) : null}
+      {hasLoadError ? (
+        <p className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          Run <code>supabase/profile-migration.sql</code> to align profile tables
+          with the Clerk-based schema.
+        </p>
+      ) : null}
 
-        {activeTab === "basic" && (
-          <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <div className="space-y-6">
-              <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">
-                      Basic information
-                    </p>
-                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                      Personal, academic, and eligibility details
-                    </h2>
-                  </div>
-                  <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
-                    Active tab
-                  </span>
-                </div>
-
-                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                  {basicFieldDefinitions.map(({ key, label, placeholder }) => (
-                    <label key={key} className="block text-sm font-medium text-slate-800">
-                      {label}
-                      <input
-                        value={basicInfo[key]}
-                        onChange={(event) => updateBasicField(key, event.target.value)}
-                        className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300"
-                        placeholder={placeholder}
-                        disabled={isLoading}
-                      />
-                    </label>
-                  ))}
-                </div>
-              </article>
-
-              <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-violet-700">
-                  Self-identification
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                  Optional demographic fields
-                </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-                  Save standard answers for gender, race, veteran status, and disability
-                  status so they are available when forms ask for them.
-                </p>
-                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                  {identityFieldDefinitions.map(({ key, label, placeholder }) => (
-                    <label key={key} className="block text-sm font-medium text-slate-800">
-                      {label}
-                      <input
-                        value={identityInfo[key]}
-                        onChange={(event) => updateIdentityField(key, event.target.value)}
-                        className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300"
-                        placeholder={placeholder}
-                        disabled={isLoading}
-                      />
-                    </label>
-                  ))}
-                </div>
-              </article>
-            </div>
-
-            <aside className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm xl:sticky xl:top-8 xl:h-fit">
-              <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                In this section
+      <div className="flex flex-wrap gap-1 rounded-md bg-muted p-1" role="tablist">
+        {tabItems.map((tab) => {
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                "flex flex-1 flex-col items-start gap-0.5 rounded px-3 py-2 text-left text-sm transition-colors",
+                isActive
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <span className="font-medium">{tab.title}</span>
+              <span className="text-xs text-muted-foreground">
+                {tab.description}
               </span>
-              <ul className="mt-5 space-y-3 text-sm leading-7 text-slate-600">
-                <li className="rounded-2xl bg-slate-50 px-4 py-3">Contact details and links</li>
-                <li className="rounded-2xl bg-slate-50 px-4 py-3">School, degree, and graduation</li>
-                <li className="rounded-2xl bg-slate-50 px-4 py-3">Work authorization and sponsorship</li>
-                <li className="rounded-2xl bg-slate-50 px-4 py-3">Race, gender, veteran, disability</li>
+            </button>
+          );
+        })}
+      </div>
+
+      {activeTab === "basic" && (
+        <div className="grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
+          <div className="flex flex-col gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Basic information</CardTitle>
+                <CardDescription>
+                  Personal, academic, and eligibility details.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {basicFieldDefinitions.map(({ key, label, placeholder }) => (
+                    <div key={key} className="flex flex-col gap-2">
+                      <Label htmlFor={`basic-${key}`}>{label}</Label>
+                      <Input
+                        id={`basic-${key}`}
+                        value={basicInfo[key]}
+                        onChange={(event) =>
+                          updateBasicField(key, event.target.value)
+                        }
+                        placeholder={placeholder}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Self-identification</CardTitle>
+                <CardDescription>
+                  Optional standard answers for gender, race, veteran, and
+                  disability status.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {identityFieldDefinitions.map(({ key, label, placeholder }) => (
+                    <div key={key} className="flex flex-col gap-2">
+                      <Label htmlFor={`id-${key}`}>{label}</Label>
+                      <Input
+                        id={`id-${key}`}
+                        value={identityInfo[key]}
+                        onChange={(event) =>
+                          updateIdentityField(key, event.target.value)
+                        }
+                        placeholder={placeholder}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="xl:sticky xl:top-8 xl:h-fit">
+            <CardHeader>
+              <CardTitle className="text-base">In this section</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
+                <li className="rounded-md border border-border bg-muted/40 px-3 py-2">
+                  Contact details and links
+                </li>
+                <li className="rounded-md border border-border bg-muted/40 px-3 py-2">
+                  School, degree, and graduation
+                </li>
+                <li className="rounded-md border border-border bg-muted/40 px-3 py-2">
+                  Work authorization and sponsorship
+                </li>
+                <li className="rounded-md border border-border bg-muted/40 px-3 py-2">
+                  Race, gender, veteran, disability
+                </li>
               </ul>
-            </aside>
-          </section>
-        )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-        {activeTab === "uploads" && <UploadsSection />}
+      {activeTab === "uploads" && <UploadsSection />}
 
-        {activeTab === "answers" && (
-          <section className="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
-              Application answers
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-              Reusable general responses
-            </h2>
-            <div className="mt-5 space-y-4">
+      {activeTab === "answers" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Application answers</CardTitle>
+            <CardDescription>
+              Reusable general responses.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4">
               {answerBlockDefinitions.map((block) => (
-                <label key={block} className="block text-sm font-medium text-slate-800">
-                  {block}
-                  <textarea
+                <div key={block} className="flex flex-col gap-2">
+                  <Label htmlFor={`answer-${block}`}>{block}</Label>
+                  <Textarea
+                    id={`answer-${block}`}
                     value={applicationAnswers[block]}
-                    onChange={(event) => updateAnswerField(block, event.target.value)}
-                    className="mt-2 min-h-32 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300"
+                    onChange={(event) =>
+                      updateAnswerField(block, event.target.value)
+                    }
                     placeholder={`Write a reusable answer for: ${block}`}
                     disabled={isLoading}
+                    className="min-h-32"
                   />
-                </label>
+                </div>
               ))}
             </div>
-          </section>
-        )}
-      </div>
-    </main>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
