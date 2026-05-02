@@ -5,7 +5,7 @@ import {
   uploadKinds,
   type ProfileUploadRecord,
   type UploadKind,
-} from "@/lib/profile-uploads";
+} from "@/lib/profile-uploads-shared";
 
 const kindLabels: Record<UploadKind, { title: string; description: string }> = {
   resume: {
@@ -84,6 +84,12 @@ export function UploadsSection() {
     setUploads((current) => current.filter((upload) => upload.id !== uploadId));
   }
 
+  function handleReplaceUpload(upload: ProfileUploadRecord) {
+    setUploads((current) =>
+      current.map((existing) => (existing.id === upload.id ? upload : existing)),
+    );
+  }
+
   return (
     <section className="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-700">
@@ -114,6 +120,7 @@ export function UploadsSection() {
             isLoading={isLoading}
             onUploaded={handleAddUpload}
             onRemoved={handleRemoveUpload}
+            onReplaced={handleReplaceUpload}
           />
         ))}
       </div>
@@ -129,6 +136,7 @@ type UploadCardProps = {
   isLoading: boolean;
   onUploaded: (upload: ProfileUploadRecord) => void;
   onRemoved: (uploadId: string) => void;
+  onReplaced: (upload: ProfileUploadRecord) => void;
 };
 
 function UploadCard({
@@ -139,10 +147,12 @@ function UploadCard({
   isLoading,
   onUploaded,
   onRemoved,
+  onReplaced,
 }: UploadCardProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reextractingId, setReextractingId] = useState<string | null>(null);
 
   async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -200,6 +210,29 @@ function UploadCard({
     }
   }
 
+  async function handleReextract(upload: ProfileUploadRecord) {
+    setReextractingId(upload.id);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/profile/uploads/${upload.id}/reextract`,
+        { method: "POST" },
+      );
+      const payload = (await response.json()) as {
+        upload?: ProfileUploadRecord;
+        error?: string;
+      };
+      if (!response.ok || !payload.upload) {
+        throw new Error(payload.error ?? "Re-extract failed.");
+      }
+      onReplaced(payload.upload);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Re-extract failed.");
+    } finally {
+      setReextractingId(null);
+    }
+  }
+
   return (
     <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 px-5 py-5">
       <p className="text-sm font-semibold text-slate-900">{title}</p>
@@ -236,12 +269,27 @@ function UploadCard({
                 <p className="truncate text-sm font-medium text-slate-900">
                   {upload.originalFilename}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-slate-500">
                   {formatBytes(upload.sizeBytes)} ·{" "}
                   {new Date(upload.createdAt).toLocaleDateString()}
                 </p>
+                <div className="mt-1">
+                  <ExtractionBadge upload={upload} />
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {upload.extractionStatus !== "ok" ? (
+                  <button
+                    type="button"
+                    onClick={() => handleReextract(upload)}
+                    disabled={reextractingId === upload.id}
+                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {reextractingId === upload.id
+                      ? "Re-extracting…"
+                      : "Re-extract text"}
+                  </button>
+                ) : null}
                 {upload.downloadUrl ? (
                   <a
                     href={upload.downloadUrl}
@@ -267,5 +315,35 @@ function UploadCard({
         <p className="mt-4 text-xs text-slate-500">No files yet.</p>
       )}
     </div>
+  );
+}
+
+function ExtractionBadge({ upload }: { upload: ProfileUploadRecord }) {
+  if (upload.extractionStatus === "ok") {
+    const length = upload.extractedText?.length ?? 0;
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
+        ✓ Text extracted{length > 0 ? ` · ${length.toLocaleString()} chars` : ""}
+      </span>
+    );
+  }
+  if (upload.extractionStatus === "failed") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700">
+        ⚠ Could not parse
+      </span>
+    );
+  }
+  if (upload.extractionStatus === "unsupported") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-600">
+        Unsupported file type
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+      Pending text extraction
+    </span>
   );
 }

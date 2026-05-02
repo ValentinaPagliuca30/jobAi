@@ -12,6 +12,9 @@ export type JobApplicationRecord = {
   status: string;
   appliedAt: string | null;
   selectedResumeId: string | null;
+  coverLetterDraft: string | null;
+  coverLetterEdited: string | null;
+  coverLetterGeneratedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -34,13 +37,23 @@ function mapJobApplicationRecord(
     appliedAt: typeof row.applied_at === "string" ? row.applied_at : null,
     selectedResumeId:
       typeof row.selected_resume_id === "string" ? row.selected_resume_id : null,
+    coverLetterDraft:
+      typeof row.cover_letter_draft === "string" ? row.cover_letter_draft : null,
+    coverLetterEdited:
+      typeof row.cover_letter_edited === "string"
+        ? row.cover_letter_edited
+        : null,
+    coverLetterGeneratedAt:
+      typeof row.cover_letter_generated_at === "string"
+        ? row.cover_letter_generated_at
+        : null,
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   };
 }
 
 const baseSelect =
-  "id, clerk_user_id, company_name, job_title, job_url, ats_type, job_description, location, status, applied_at, selected_resume_id, created_at, updated_at";
+  "id, clerk_user_id, company_name, job_title, job_url, ats_type, job_description, location, status, applied_at, selected_resume_id, cover_letter_draft, cover_letter_edited, cover_letter_generated_at, created_at, updated_at";
 
 export async function createJobApplication(input: {
   clerkUserId: string;
@@ -166,6 +179,51 @@ export async function setJobApplicationResume(input: {
   const { data, error } = await supabase
     .from(tableName)
     .update({ selected_resume_id: input.resumeId })
+    .eq("clerk_user_id", input.clerkUserId)
+    .eq("id", input.applicationId)
+    .select(baseSelect)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return mapJobApplicationRecord(data);
+}
+
+export async function setCoverLetterDraft(input: {
+  clerkUserId: string;
+  applicationId: string;
+  draft: string;
+}) {
+  const supabase = getSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from(tableName)
+    .update({
+      cover_letter_draft: input.draft,
+      cover_letter_generated_at: new Date().toISOString(),
+    })
+    .eq("clerk_user_id", input.clerkUserId)
+    .eq("id", input.applicationId)
+    .select(baseSelect)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return mapJobApplicationRecord(data);
+}
+
+export async function setCoverLetterEdited(input: {
+  clerkUserId: string;
+  applicationId: string;
+  edited: string | null;
+}) {
+  const supabase = getSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from(tableName)
+    .update({ cover_letter_edited: input.edited })
     .eq("clerk_user_id", input.clerkUserId)
     .eq("id", input.applicationId)
     .select(baseSelect)

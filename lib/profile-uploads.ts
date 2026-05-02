@@ -1,36 +1,35 @@
+import "server-only";
 import { randomUUID } from "node:crypto";
 import { getSupabaseAdminClient } from "@/lib/supabase-admin";
+import {
+  uploadKinds,
+  type ExtractionStatus,
+  type ProfileUploadRecord,
+  type UploadKind,
+} from "@/lib/profile-uploads-shared";
+import { extractTextFromBuffer } from "@/lib/text-extraction";
 
-export const uploadKinds = [
-  "resume",
-  "transcript",
-  "cover_letter_sample",
-  "writing_sample",
-  "portfolio",
-] as const;
-
-export type UploadKind = (typeof uploadKinds)[number];
-
-export type ProfileUploadRecord = {
-  id: string;
-  clerkUserId: string;
-  kind: UploadKind;
-  originalFilename: string;
-  storagePath: string;
-  mimeType: string | null;
-  sizeBytes: number | null;
-  createdAt: string;
-  updatedAt: string;
-  downloadUrl: string | null;
-};
+export {
+  uploadKinds,
+  type ExtractionStatus,
+  type ProfileUploadRecord,
+  type UploadKind,
+} from "@/lib/profile-uploads-shared";
 
 const tableName = "profile_uploads";
 const bucketName = "user-uploads";
 const baseSelect =
-  "id, clerk_user_id, kind, original_filename, storage_path, mime_type, size_bytes, created_at, updated_at";
+  "id, clerk_user_id, kind, original_filename, storage_path, mime_type, size_bytes, created_at, updated_at, extracted_text, extraction_status, extracted_at";
 
 function isUploadKind(value: string): value is UploadKind {
   return (uploadKinds as readonly string[]).includes(value);
+}
+
+function normalizeStatus(value: unknown): ExtractionStatus {
+  if (value === "ok" || value === "failed" || value === "unsupported") {
+    return value;
+  }
+  return "pending";
 }
 
 async function withSignedUrl(
@@ -53,6 +52,11 @@ async function withSignedUrl(
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
     downloadUrl: signed?.signedUrl ?? null,
+    extractedText:
+      typeof row.extracted_text === "string" ? row.extracted_text : null,
+    extractionStatus: normalizeStatus(row.extraction_status),
+    extractedAt:
+      typeof row.extracted_at === "string" ? row.extracted_at : null,
   };
 }
 
@@ -96,6 +100,13 @@ export async function createProfileUpload(input: {
     throw uploadError;
   }
 
+  const extraction = await extractTextFromBuffer(
+    buffer,
+    input.file.type || null,
+    input.file.name,
+  );
+  const extractedAt = new Date().toISOString();
+
   const { data, error } = await supabase
     .from(tableName)
     .insert({
@@ -105,6 +116,9 @@ export async function createProfileUpload(input: {
       storage_path: storagePath,
       mime_type: input.file.type || null,
       size_bytes: input.file.size,
+      extracted_text: extraction.status === "ok" ? extraction.text : null,
+      extraction_status: extraction.status,
+      extracted_at: extractedAt,
     })
     .select(baseSelect)
     .single();
@@ -114,7 +128,69 @@ export async function createProfileUpload(input: {
     throw error;
   }
 
+  if (extraction.status === "failed") {
+    console.warn(
+      `Extraction failed for upload ${storagePath}: ${extraction.reason}`,
+    );
+  }
+
   return withSignedUrl(supabase, data);
+}
+
+export async function reextractProfileUpload(input: {
+  clerkUserId: string;
+  uploadId: string;
+}): Promise<ProfileUploadRecord> {
+  const supabase = getSupabaseAdminClient();
+
+  const { data: row, error: rowError } = await supabase
+    .from(tableName)
+    .select("storage_path, mime_type, original_filename")
+    .eq("clerk_user_id", input.clerkUserId)
+    .eq("id", input.uploadId)
+    .maybeSingle();
+
+  if (rowError) {
+    throw rowError;
+  }
+  if (!row) {
+    throw new Error("Upload not found.");
+  }
+
+  const storagePath = String(row.storage_path);
+  const { data: download, error: downloadError } = await supabase.storage
+    .from(bucketName)
+    .download(storagePath);
+
+  if (downloadError || !download) {
+    throw downloadError ?? new Error("Could not download stored file.");
+  }
+
+  const buffer = Buffer.from(await download.arrayBuffer());
+  const mimeType =
+    typeof row.mime_type === "string" ? row.mime_type : download.type || null;
+  const filename =
+    typeof row.original_filename === "string" ? row.original_filename : undefined;
+
+  const extraction = await extractTextFromBuffer(buffer, mimeType, filename);
+
+  const { data: updated, error: updateError } = await supabase
+    .from(tableName)
+    .update({
+      extracted_text: extraction.status === "ok" ? extraction.text : null,
+      extraction_status: extraction.status,
+      extracted_at: new Date().toISOString(),
+    })
+    .eq("clerk_user_id", input.clerkUserId)
+    .eq("id", input.uploadId)
+    .select(baseSelect)
+    .single();
+
+  if (updateError) {
+    throw updateError;
+  }
+
+  return withSignedUrl(supabase, updated);
 }
 
 export async function deleteProfileUpload(input: {

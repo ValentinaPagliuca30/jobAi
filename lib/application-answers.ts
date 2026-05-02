@@ -7,6 +7,8 @@ export type ApplicationAnswerRecord = {
   questionKey: string;
   questionText: string | null;
   content: string;
+  answerDraft: string | null;
+  answerGeneratedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -33,7 +35,7 @@ export type CalibrationQuestionKey = (typeof calibrationQuestions)[number]["key"
 
 const tableName = "application_answers";
 const baseSelect =
-  "id, application_id, clerk_user_id, question_key, question_text, content, created_at, updated_at";
+  "id, application_id, clerk_user_id, question_key, question_text, content, answer_draft, answer_generated_at, created_at, updated_at";
 
 function mapRow(row: Record<string, string | null>): ApplicationAnswerRecord {
   return {
@@ -44,6 +46,12 @@ function mapRow(row: Record<string, string | null>): ApplicationAnswerRecord {
     questionText:
       typeof row.question_text === "string" ? row.question_text : null,
     content: String(row.content ?? ""),
+    answerDraft:
+      typeof row.answer_draft === "string" ? row.answer_draft : null,
+    answerGeneratedAt:
+      typeof row.answer_generated_at === "string"
+        ? row.answer_generated_at
+        : null,
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   };
@@ -120,4 +128,57 @@ export async function upsertApplicationAnswers(input: {
   }
 
   return results;
+}
+
+export async function setAnswerDraft(input: {
+  clerkUserId: string;
+  applicationId: string;
+  questionKey: string;
+  questionText?: string | null;
+  draft: string;
+}) {
+  const supabase = getSupabaseAdminClient();
+  const generatedAt = new Date().toISOString();
+
+  const baseRow = {
+    application_id: input.applicationId,
+    clerk_user_id: input.clerkUserId,
+    question_key: input.questionKey,
+    question_text: input.questionText ?? null,
+    answer_draft: input.draft,
+    answer_generated_at: generatedAt,
+  };
+
+  const { data: updated, error: updateError } = await supabase
+    .from(tableName)
+    .update({
+      answer_draft: input.draft,
+      answer_generated_at: generatedAt,
+      question_text: input.questionText ?? null,
+    })
+    .eq("clerk_user_id", input.clerkUserId)
+    .eq("application_id", input.applicationId)
+    .eq("question_key", input.questionKey)
+    .select(baseSelect)
+    .maybeSingle();
+
+  if (updateError) {
+    throw updateError;
+  }
+
+  if (updated) {
+    return mapRow(updated);
+  }
+
+  const { data: inserted, error: insertError } = await supabase
+    .from(tableName)
+    .insert({ ...baseRow, content: "" })
+    .select(baseSelect)
+    .single();
+
+  if (insertError) {
+    throw insertError;
+  }
+
+  return mapRow(inserted);
 }

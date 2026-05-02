@@ -23,16 +23,19 @@ function buildInitialAnswerMap(
   questions: ApplicationQuestionRecord[],
   savedAnswers: ApplicationAnswerRecord[],
 ) {
-  const saved = new Map<string, string>();
+  const saved = new Map<string, ApplicationAnswerRecord>();
   for (const answer of savedAnswers) {
-    saved.set(answer.questionKey, answer.content);
+    saved.set(answer.questionKey, answer);
   }
-  const map: Record<string, string> = {};
+  const values: Record<string, string> = {};
+  const drafts: Record<string, string | null> = {};
   for (const question of questions) {
     const key = answerKeyForQuestion(question);
-    map[question.id] = saved.get(key) ?? "";
+    const record = saved.get(key);
+    values[question.id] = record?.content ?? record?.answerDraft ?? "";
+    drafts[question.id] = record?.answerDraft ?? null;
   }
-  return map;
+  return { values, drafts };
 }
 
 export function ApplicationQuestions({
@@ -43,9 +46,14 @@ export function ApplicationQuestions({
 }: ApplicationQuestionsProps) {
   const [questions, setQuestions] =
     useState<ApplicationQuestionRecord[]>(initialQuestions);
-  const [values, setValues] = useState<Record<string, string>>(() =>
-    buildInitialAnswerMap(initialQuestions, initialAnswers),
+  const initialMap = buildInitialAnswerMap(initialQuestions, initialAnswers);
+  const [values, setValues] = useState<Record<string, string>>(
+    initialMap.values,
   );
+  const [drafts, setDrafts] = useState<Record<string, string | null>>(
+    initialMap.drafts,
+  );
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -74,6 +82,13 @@ export function ApplicationQuestions({
         const next: Record<string, string> = {};
         for (const question of payload.questions ?? []) {
           next[question.id] = current[question.id] ?? "";
+        }
+        return next;
+      });
+      setDrafts((current) => {
+        const next: Record<string, string | null> = {};
+        for (const question of payload.questions ?? []) {
+          next[question.id] = current[question.id] ?? null;
         }
         return next;
       });
@@ -123,6 +138,45 @@ export function ApplicationQuestions({
 
   function applySuggestion(questionId: string, suggestion: string) {
     setValues((current) => ({ ...current, [questionId]: suggestion }));
+  }
+
+  async function handleGenerate(question: ApplicationQuestionRecord) {
+    setGeneratingId(question.id);
+    setErrorMessage(null);
+    setStatusMessage(null);
+    try {
+      const response = await fetch("/api/generate/answer", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          applicationId,
+          questionKey: answerKeyForQuestion(question),
+          questionText: question.questionText,
+        }),
+      });
+      const payload = (await response.json()) as {
+        draft?: string;
+        error?: string;
+      };
+      if (!response.ok || typeof payload.draft !== "string") {
+        throw new Error(payload.error ?? "Generation failed.");
+      }
+      setDrafts((current) => ({ ...current, [question.id]: payload.draft! }));
+      setValues((current) => ({ ...current, [question.id]: payload.draft! }));
+      setStatusMessage("Draft generated. Edit it freely, then Save answers.");
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "Generation failed.",
+      );
+    } finally {
+      setGeneratingId(null);
+    }
+  }
+
+  function handleResetToDraft(questionId: string) {
+    const draft = drafts[questionId];
+    if (draft === null || draft === undefined) return;
+    setValues((current) => ({ ...current, [questionId]: draft }));
   }
 
   return (
@@ -229,15 +283,40 @@ export function ApplicationQuestions({
                   />
                 </div>
 
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                   <button
                     type="button"
-                    disabled
-                    title="Generate with AI — coming soon (needs Anthropic key)"
-                    className="rounded-full border border-dashed border-slate-300 bg-white/60 px-3 py-1 text-xs text-slate-400"
+                    onClick={() => handleGenerate(question)}
+                    disabled={generatingId === question.id}
+                    className="rounded-full bg-slate-950 px-3 py-1 text-xs font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    ✨ Generate (soon)
+                    {generatingId === question.id
+                      ? "Generating…"
+                      : drafts[question.id]
+                        ? "✨ Regenerate"
+                        : "✨ Generate draft"}
                   </button>
+                  {drafts[question.id] !== null &&
+                  drafts[question.id] !== undefined ? (
+                    fieldValue === drafts[question.id] ? (
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700">
+                        AI draft
+                      </span>
+                    ) : (
+                      <>
+                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
+                          Edited
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleResetToDraft(question.id)}
+                          className="text-xs font-medium text-sky-700 underline"
+                        >
+                          Reset to AI draft
+                        </button>
+                      </>
+                    )
+                  ) : null}
                 </div>
               </div>
             );

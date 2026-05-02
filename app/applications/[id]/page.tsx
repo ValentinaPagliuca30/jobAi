@@ -8,6 +8,7 @@ import { loadProfileForUser } from "@/lib/profile-store";
 import { answerBlockDefinitions } from "@/lib/profile";
 import { ApplicationPrep } from "./application-prep";
 import { ApplicationQuestions } from "./application-questions";
+import { CoverLetter } from "./cover-letter";
 import { SubmitApplicationButton } from "./submit-application-button";
 
 type ApplicationDetailPageProps = {
@@ -148,7 +149,7 @@ export default async function ApplicationDetailPage({
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">
-              What we'll use for this application
+              What we&rsquo;ll use for this application
             </p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
               Profile preview
@@ -259,6 +260,13 @@ export default async function ApplicationDetailPage({
               resumeOptions={resumeOptions}
               initialResumeId={application.selectedResumeId}
               initialAnswers={savedAnswers}
+            />
+
+            <CoverLetter
+              applicationId={application.id}
+              initialDraft={application.coverLetterDraft}
+              initialEdited={application.coverLetterEdited}
+              initialGeneratedAt={application.coverLetterGeneratedAt}
             />
 
             <ApplicationQuestions
