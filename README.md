@@ -25,6 +25,12 @@ Open http://localhost:3000.
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
 - `CLERK_SECRET_KEY`
 
+Optional:
+
+- `LOG_AI_PROMPTS` — set to `"false"` to silence the `[ai-stub]` prompt
+  logging in Vercel Function logs. Defaults to on so V2 prompts can be
+  reviewed during smoke tests.
+
 Vercel Project Settings should mirror these.
 
 ## Database setup (apply in order)
@@ -46,26 +52,44 @@ Also create a private Supabase Storage bucket named `user-uploads`.
 
 ## V2 features (current)
 
+- Apple-style visual refresh: SF Pro system font stack, Apple Blue accent
+  (`#0071e3`), frosted-glass top navigation, restrained shadows, paper
+  airplane brand mark next to the JobPilot wordmark, auto-generated favicon.
 - Profile basic info + reusable answer blocks (saved per-user via Clerk).
-- Resume / writing sample / transcript / cover letter / portfolio uploads, with **text extraction** on PDFs (`pdf-parse`) and DOCX (`mammoth`). Status badge per upload, manual re-extract button.
+- Resume / writing sample / transcript / cover letter / portfolio uploads, with
+  **text extraction** on PDFs (`pdf-parse`) and DOCX (`mammoth`). Status badge
+  per upload, manual re-extract button.
 - Paste a Greenhouse / Lever URL → application draft.
-- Application detail page with profile preview, resume picker, 3 calibration questions, scraped posting questions, **editable cover letter** with generate-draft button, **per-question editable answers** with generate-draft button.
-- AI generate buttons currently call `/api/generate/cover-letter` and `/api/generate/answer`, which assemble the full prompt (logged to the server console) and return a clearly-marked V2 placeholder.
+- Application detail page with profile preview, resume picker, 3 calibration
+  questions, scraped posting questions, **editable cover letter** with
+  generate-draft button, **per-question editable answers** with
+  generate-draft button.
+- AI generate buttons currently call `/api/generate/cover-letter` and
+  `/api/generate/answer`, which assemble the full prompt (logged to Vercel
+  Function logs unless `LOG_AI_PROMPTS=false`) and return a clearly-marked V2
+  placeholder.
 - Drafts and Succeed tracker tables.
+- Loading skeletons + error boundaries on all main routes.
+- Unit tests for the prompt assembly and text extraction (`npm run test`).
+- See `DEMO_URLS.md` for the curated demo posting list.
 
 ## V3 (next)
 
-- Replace `generateStub(...)` in `app/api/generate/*/route.ts` with `anthropic.messages.create({ model: "claude-sonnet-4-6", system, messages: [...] })`. Prompt assembly already exists in `lib/ai-prompts.ts`.
+- Replace `generateStub(...)` in `app/api/generate/*/route.ts` with
+  `anthropic.messages.create({ model: "claude-sonnet-4-6", system, messages: [...] })`.
+  Prompt assembly already exists in `lib/ai-prompts.ts`.
 - Add prompt caching on the system prompt.
-- Build a Playwright autofill worker (separate `worker/` directory at repo root, not Vercel-deployed).
+- Build a Playwright autofill worker (separate `worker/` directory at repo
+  root, not Vercel-deployed).
 - Production Clerk + custom domain.
-- Curated demo URL list + backup recording.
+- Backup recording for the live demo.
 
 ## Useful commands
 
 ```bash
-npm run dev      # local dev server on :3000
-npm run build    # production build
-npm run lint     # eslint
-npx tsc --noEmit # type-check without emitting JS
+npm run dev       # local dev server on :3000
+npm run build     # production build
+npm run lint      # eslint
+npm run test      # vitest run (lib/**/*.test.ts)
+npx tsc --noEmit  # type-check without emitting JS
 ```

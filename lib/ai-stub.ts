@@ -17,7 +17,10 @@ export function generateStub(
   prompt: AssembledPrompt,
   meta: StubMeta = {},
 ): string {
-  if (process.env.NODE_ENV !== "production") {
+  // V2: log assembled prompt so it can be reviewed (Vercel Function logs, local dev,
+  // or pasted into the free claude.ai web UI for prompt validation before paying for tokens).
+  // Set LOG_AI_PROMPTS="false" to silence. V3 will gate this on a debug flag.
+  if (process.env.LOG_AI_PROMPTS !== "false") {
     console.log(
       `[ai-stub] ${promptName} prompt assembled (system ${prompt.system.length} chars, user ${prompt.user.length} chars)`,
     );
