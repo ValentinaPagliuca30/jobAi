@@ -9,7 +9,7 @@ where applicable. Re-verify each entry before the project fair.
 
 | Company | Role | URL | Last verified |
 |---|---|---|---|
-| _(populate during smoke test)_ | _(SWE intern / new-grad)_ | https://boards.greenhouse.io/... | YYYY-MM-DD |
+| Anthropic | Anthropic Fellows Program | https://job-boards.greenhouse.io/anthropic/jobs/5023394008 | 2026-05-05 |
 | | | | |
 | | | | |
 | | | | |
