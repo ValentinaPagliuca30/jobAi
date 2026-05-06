@@ -102,12 +102,15 @@ export function parseJobPostingUrl(input: string): ParsedJobPosting {
         segments[0] === "boards" ? segments[1] : segments[0] ?? "";
       const roleSegment =
         jobsIndex >= 0 ? segments[jobsIndex + 1] ?? "" : segments.at(-1) ?? "";
+      const roleSegmentIsNumericId =
+        roleSegment !== "" && /^\d+$/.test(roleSegment);
 
       return {
         atsType,
         normalizedUrl,
         companyName: companySegment ? slugToWords(companySegment) : null,
-        roleTitle: roleSegment ? slugToWords(roleSegment) : null,
+        roleTitle:
+          roleSegment && !roleSegmentIsNumericId ? slugToWords(roleSegment) : null,
         supported: Boolean(companySegment && roleSegment),
       };
     }

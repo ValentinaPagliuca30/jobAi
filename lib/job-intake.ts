@@ -185,6 +185,13 @@ function extractLocation(html: string) {
   return null;
 }
 
+function parseGreenhouseTitle(title: string | null) {
+  if (!title) return null;
+  const match = title.match(/^\s*Job Application for\s+(.+?)\s+at\s+(.+?)\s*$/i);
+  if (!match) return null;
+  return { role: match[1].trim(), company: match[2].trim() };
+}
+
 function normalizeCompanyName(value: string | null, title: string | null) {
   if (value) {
     return value;
@@ -192,6 +199,11 @@ function normalizeCompanyName(value: string | null, title: string | null) {
 
   if (!title) {
     return "Unknown company";
+  }
+
+  const greenhouse = parseGreenhouseTitle(title);
+  if (greenhouse?.company) {
+    return greenhouse.company;
   }
 
   const byAt = title.match(/ at ([^-|]+)/i);
@@ -216,6 +228,11 @@ function normalizeRoleTitle(value: string | null, title: string | null) {
 
   if (!title) {
     return "Unknown role";
+  }
+
+  const greenhouse = parseGreenhouseTitle(title);
+  if (greenhouse?.role) {
+    return greenhouse.role;
   }
 
   const firstSegment = title.split("|")[0]?.split("-")[0]?.trim();
