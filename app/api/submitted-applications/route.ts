@@ -47,6 +47,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ submitted });
   } catch (error) {
+    console.error("POST /api/submitted-applications failed", error);
     const message =
       error instanceof Error
         ? error.message

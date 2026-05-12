@@ -7,6 +7,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import Link from "next/link";
+import { Analytics } from "@vercel/analytics/next";
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import "./globals.css";
@@ -90,6 +91,7 @@ export default function RootLayout({
           </header>
           {children}
         </ClerkProvider>
+        <Analytics />
       </body>
     </html>
   );

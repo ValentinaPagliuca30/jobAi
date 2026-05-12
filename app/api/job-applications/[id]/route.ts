@@ -26,6 +26,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    console.error("DELETE /api/job-applications/[id] failed", error);
     return NextResponse.json(
       { error: describeError(error) },
       { status: 500 },
@@ -57,6 +58,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     return NextResponse.json({ application });
   } catch (error) {
+    console.error("PATCH /api/job-applications/[id] failed", error);
     return NextResponse.json(
       { error: describeError(error) },
       { status: 500 },

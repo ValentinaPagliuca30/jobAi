@@ -101,6 +101,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    console.error("POST /api/job-intake failed", error);
     const message =
       error instanceof Error
         ? error.message
