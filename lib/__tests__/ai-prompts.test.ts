@@ -105,60 +105,60 @@ const baseCtx: PromptContext = {
   calibrationAnswers: makeCalibration(),
 };
 
+function fullUser(p: { userStable: string; userVolatile: string }): string {
+  return `${p.userStable}\n${p.userVolatile}`;
+}
+
 describe("assembleCoverLetterPrompt", () => {
   it("returns the cover-letter system prompt", () => {
     const out = assembleCoverLetterPrompt(baseCtx);
     expect(out.system).toContain("editorial assistant");
-    expect(out.system).toContain("~250-word cover letter");
+    expect(out.system).toContain("3-paragraph cover letter");
   });
 
-  it("includes applicant identifying details in the user prompt", () => {
+  it("puts applicant + resume + writing samples in the stable (cacheable) block", () => {
     const out = assembleCoverLetterPrompt(baseCtx);
-    expect(out.user).toContain("Valentina Pagliuca");
-    expect(out.user).toContain("MPCS");
+    expect(out.userStable).toContain("Valentina Pagliuca");
+    expect(out.userStable).toContain("MPCS");
+    expect(out.userStable).toContain("Internship at Acme");
+    expect(out.userStable).toContain("--- Sample 1 ---");
+    expect(out.userStable).toContain("distributed systems");
   });
 
-  it("includes the resume text", () => {
+  it("puts job + calibration + task in the volatile block", () => {
     const out = assembleCoverLetterPrompt(baseCtx);
-    expect(out.user).toContain("## Resume (extracted text)");
-    expect(out.user).toContain("Internship at Acme");
+    expect(out.userVolatile).toContain("Stripe");
+    expect(out.userVolatile).toContain("Software Engineer Intern");
+    expect(out.userVolatile).toContain("Payments infrastructure");
+    expect(out.userVolatile).toContain("global payment infra");
+    expect(out.userVolatile).toContain("checkout integration");
+    expect(out.userVolatile).toContain("Concise, grounded");
   });
 
-  it("includes all three calibration answers", () => {
+  it("includes the resume text section header", () => {
     const out = assembleCoverLetterPrompt(baseCtx);
-    expect(out.user).toContain("global payment infra");
-    expect(out.user).toContain("checkout integration");
-    expect(out.user).toContain("Concise, grounded");
-  });
-
-  it("includes job company, role, and description", () => {
-    const out = assembleCoverLetterPrompt(baseCtx);
-    expect(out.user).toContain("Stripe");
-    expect(out.user).toContain("Software Engineer Intern");
-    expect(out.user).toContain("Payments infrastructure");
-  });
-
-  it("includes writing samples block", () => {
-    const out = assembleCoverLetterPrompt(baseCtx);
-    expect(out.user).toContain("--- Sample 1 ---");
-    expect(out.user).toContain("distributed systems");
+    expect(out.userStable).toContain("## Resume (extracted text)");
   });
 
   it("falls back to a placeholder when resume is missing", () => {
     const out = assembleCoverLetterPrompt({ ...baseCtx, resumeText: null });
-    expect(out.user).toContain("(no resume on file)");
+    expect(out.userStable).toContain("(no resume on file)");
   });
 
   it("falls back to a placeholder when no writing samples", () => {
     const out = assembleCoverLetterPrompt({ ...baseCtx, writingSampleTexts: [] });
-    expect(out.user).toContain("(no writing samples on file)");
+    expect(out.userStable).toContain("(no writing samples on file)");
   });
 
-  it("ends with the task line", () => {
+  it("volatile block ends with the task line", () => {
     const out = assembleCoverLetterPrompt(baseCtx);
-    expect(out.user.trimEnd().endsWith(
-      "Draft a ~250-word cover letter for this role. Plain text. No markdown.",
-    )).toBe(true);
+    expect(
+      out.userVolatile
+        .trimEnd()
+        .endsWith(
+          "Draft a 3-paragraph cover letter (~250 words) for this role, following the structure in the system prompt. Plain text, no markdown, no greeting, no sign-off.",
+        ),
+    ).toBe(true);
   });
 });
 
@@ -174,17 +174,18 @@ describe("assembleAnswerPrompt", () => {
     expect(out.system).toContain("80-180 words");
   });
 
-  it("includes the question text", () => {
+  it("puts the question in the volatile block", () => {
     const out = assembleAnswerPrompt({ ...baseCtx, question });
-    expect(out.user).toContain("## The question to answer");
-    expect(out.user).toContain(question.text);
+    expect(out.userVolatile).toContain("## The question to answer");
+    expect(out.userVolatile).toContain(question.text);
   });
 
-  it("still includes resume + calibration + job context", () => {
+  it("includes resume + calibration + job context across the two blocks", () => {
     const out = assembleAnswerPrompt({ ...baseCtx, question });
-    expect(out.user).toContain("Internship at Acme");
-    expect(out.user).toContain("global payment infra");
-    expect(out.user).toContain("Stripe");
-    expect(out.user).toContain("Payments infrastructure");
+    const combined = fullUser(out);
+    expect(combined).toContain("Internship at Acme");
+    expect(combined).toContain("global payment infra");
+    expect(combined).toContain("Stripe");
+    expect(combined).toContain("Payments infrastructure");
   });
 });

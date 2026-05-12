@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { listApplicationAnswers } from "@/lib/application-answers";
 import { assembleCoverLetterPrompt } from "@/lib/ai-prompts";
 import { generateStub } from "@/lib/ai-stub";
+import { generateWithClaude, isAnthropicConfigured } from "@/lib/ai-client";
 import { describeError } from "@/lib/error";
 import {
   getJobApplicationById,
@@ -79,14 +80,32 @@ export async function POST(request: Request) {
       (a) => a.questionKey.startsWith("calibration_") && a.content.trim() !== "",
     ).length;
 
-    const draft = generateStub("cover-letter", prompt, {
+    const stubMeta = {
       applicantName: profile.basicInfo.fullName || undefined,
       company: application.companyName || undefined,
       role: application.jobTitle || undefined,
       resumeChars: resumeUpload?.extractedText?.length ?? 0,
       writingSampleCount: writingSampleTexts.length,
       calibrationFilled,
-    });
+    };
+
+    let draft: string;
+    if (isAnthropicConfigured()) {
+      try {
+        const result = await generateWithClaude("cover-letter", prompt, {
+          maxTokens: 1024,
+        });
+        draft = result.text;
+      } catch (err) {
+        console.error(
+          "[ai-client] cover-letter generation failed, falling back to stub",
+          err,
+        );
+        draft = generateStub("cover-letter", prompt, stubMeta);
+      }
+    } else {
+      draft = generateStub("cover-letter", prompt, stubMeta);
+    }
 
     const updated = await setCoverLetterDraft({
       clerkUserId: userId,

@@ -6,6 +6,7 @@ import {
 } from "@/lib/application-answers";
 import { assembleAnswerPrompt } from "@/lib/ai-prompts";
 import { generateStub } from "@/lib/ai-stub";
+import { generateWithClaude, isAnthropicConfigured } from "@/lib/ai-client";
 import { describeError } from "@/lib/error";
 import { getJobApplicationById } from "@/lib/job-applications";
 import { listProfileUploads } from "@/lib/profile-uploads";
@@ -82,14 +83,33 @@ export async function POST(request: Request) {
       (a) => a.questionKey.startsWith("calibration_") && a.content.trim() !== "",
     ).length;
 
-    const draft = generateStub(`answer:${body.questionKey}`, prompt, {
+    const stubMeta = {
       applicantName: profile.basicInfo.fullName || undefined,
       company: application.companyName || undefined,
       role: application.jobTitle || undefined,
       resumeChars: resumeUpload?.extractedText?.length ?? 0,
       writingSampleCount: writingSampleTexts.length,
       calibrationFilled,
-    });
+    };
+    const promptName = `answer:${body.questionKey}`;
+
+    let draft: string;
+    if (isAnthropicConfigured()) {
+      try {
+        const result = await generateWithClaude(promptName, prompt, {
+          maxTokens: 800,
+        });
+        draft = result.text;
+      } catch (err) {
+        console.error(
+          `[ai-client] ${promptName} generation failed, falling back to stub`,
+          err,
+        );
+        draft = generateStub(promptName, prompt, stubMeta);
+      }
+    } else {
+      draft = generateStub(promptName, prompt, stubMeta);
+    }
 
     const updated = await setAnswerDraft({
       clerkUserId: userId,

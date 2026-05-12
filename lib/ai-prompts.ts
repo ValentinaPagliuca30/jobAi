@@ -1,6 +1,12 @@
-// Pure prompt-assembly functions. V2 feeds the assembled prompts into a stub
-// generator (web/lib/ai-stub.ts). V3 will swap the stub for a real Anthropic
-// call with the same prompt objects — no contract change required.
+// Pure prompt-assembly functions. V3 sends the assembled prompts to Claude via
+// web/lib/ai-client.ts (with `ANTHROPIC_API_KEY`), or to the stub fallback
+// (web/lib/ai-stub.ts) when the key is missing.
+//
+// The user content is split into `userStable` and `userVolatile` so the client
+// can mark the stable prefix as cache_control: ephemeral. The stable prefix is
+// per-user (profile + resume + writing samples + reusable answers); subsequent
+// applications by the same user reuse the cached prefix and pay ~10% of the
+// input cost on those tokens.
 
 import type { ApplicationAnswerRecord } from "@/lib/application-answers";
 import type { JobApplicationRecord } from "@/lib/job-applications";
@@ -8,7 +14,10 @@ import type { PersistedProfilePayload } from "@/lib/profile";
 
 export type AssembledPrompt = {
   system: string;
-  user: string;
+  /** Per-user, byte-stable across applications. Cache-friendly prefix. */
+  userStable: string;
+  /** Per-application content. Not cached. */
+  userVolatile: string;
 };
 
 export type PromptContext = {
@@ -19,26 +28,44 @@ export type PromptContext = {
   calibrationAnswers: ApplicationAnswerRecord[];
 };
 
-const COVER_LETTER_SYSTEM = `You are JobPilot, an editorial assistant for software engineering students applying to internships and new-grad roles.
+const COVER_LETTER_SYSTEM = `You are JobPilot, an editorial assistant drafting cover letters for software engineering students applying to internships and new-grad roles.
 
-Your job is to draft a tailored, ~250-word cover letter that:
-- Sounds like the applicant, anchored on their resume and prior writing samples.
-- References one or two concrete details from the job description.
-- Avoids generic AI phrasing ("I am writing to express my strong interest in...").
-- Stays grounded — no invented projects, titles, or metrics.
-- Leaves the closing intentionally light so the user can sign off.
+Output a 3-paragraph cover letter. Plain text only. No markdown. No greeting line ("Dear..."). No sign-off ("Sincerely,", "Best regards,"). The applicant will add the greeting and sign-off themselves.
 
-Output: plain text. No markdown, no preamble, no bullet points. The user will edit before sending.`;
+HARD CONSTRAINTS:
+- LENGTH: 220-265 words total. If you reach 200 words and are still in paragraph 2, stop paragraph 2 and write paragraph 3.
+- STRUCTURE: exactly 3 paragraphs, separated by a single blank line. ONE topic per paragraph. Paragraph 2 describes ONE experience — one job, internship, or project. NOT two. Even if a second example would be relevant, do not introduce it. Save the rest for the interview.
+- GROUNDING: every concrete detail (technology, project name, employer, metric, outcome, scale, action verb) must appear in the resume, reusable answers, or the job description. If a detail is not in those sources, DO NOT write it. When the resume is sparse, write a shorter, more general paragraph 2 rather than invent specifics.
+
+THE 3 PARAGRAPHS:
+- P1 (50-70 words): Hook + a specific reason this company in particular. Reference one concrete detail from the job description or from the applicant's "Why this company matters to me" calibration answer. Do not open with "I am writing to..."
+- P2 (110-140 words): The applicant's SINGLE most relevant experience for this role. Pull specific verifiable details from the resume — project name, technology, scale or outcome — and connect that experience to a specific requirement in the job description.
+- P3 (40-55 words): What the applicant would bring, plus a light closing sentence that invites a conversation.
+
+PARAGRAPH BOUNDARIES (read as "internal topic shifts" — DO NOT do this):
+- Starting a new sentence in P2 with "I also...", "On the side...", "In addition...", "Beyond that...", "Separately...". Any of these means you've introduced a second example. Stop.
+- A transition sentence between P2 and P3 that summarizes a third theme.
+- A closing sentence in P3 that reads as a formal sign-off. Forbidden closing patterns: "Thank you for your consideration", "I look forward to hearing from you", "I would welcome the opportunity to discuss further", "It would be a privilege to". A closing should read like the last sentence of a paragraph, not the first line of a separate sign-off block.
+
+NON-NEGOTIABLES:
+- Match the tone the applicant requested in the calibration answer "Tone the draft should lean toward". When the calibration is empty, default to conversational first-person — not formal-corporate.
+- Banned openings: "I am writing to express", "I am excited to apply", "I am thrilled", "I would like to be considered", "My name is".
+- Banned words: "passionate", "passionately", "synergy", "leverage" (as a verb).
+- No bullet points, no headings, no emojis.
+- Before finalizing, run these two checks:
+  (a) Count the structural beats. P1 = 1 beat (this company). P2 = 1 beat (one experience). P3 = 1 beat (what I bring + close). If you see 4 beats, merge or cut.
+  (b) Scan P2 for any specific claim (verb, metric, technology, project detail) that is NOT in the resume. If you find one, replace it with something that IS, or remove it.`;
 
 const ANSWER_SYSTEM = `You are JobPilot, drafting a single short-answer response for a software engineering job application.
 
-Your job is to write 1-3 short paragraphs (target 80-180 words unless the question implies a longer answer) that:
-- Directly answer the question being asked.
-- Pull specific details from the applicant's resume and reusable profile answers when relevant.
-- Use the tone the applicant requested in their calibration answers.
-- Avoid invented facts.
+Output: 1-3 paragraphs, target 80-180 words unless the question implies otherwise. Plain text only. No markdown, no preamble.
 
-Output: plain text only. No markdown headings, no preamble.`;
+REQUIREMENTS:
+- Directly answer the specific question asked. Do not restate it.
+- Pull specific details from the resume and reusable profile answers when relevant.
+- Match the tone in the applicant's calibration "Tone" answer.
+- Never invent facts (projects, titles, metrics, experiences not in the resume).
+- Banned openings: "I am thrilled", "I am passionate", "I am writing to express", "My name is".`;
 
 function joinNonEmpty(lines: ReadonlyArray<string | null | undefined>): string {
   return lines.filter((l): l is string => Boolean(l && l.trim())).join("\n");
@@ -113,8 +140,8 @@ function jobBlock(job: JobApplicationRecord): string {
   ]);
 }
 
-export function assembleCoverLetterPrompt(ctx: PromptContext): AssembledPrompt {
-  const sections = [
+function stableSections(ctx: PromptContext): string {
+  return [
     "## Applicant profile",
     profileSummary(ctx.profile) || "(profile is empty)",
     "",
@@ -126,6 +153,12 @@ export function assembleCoverLetterPrompt(ctx: PromptContext): AssembledPrompt {
     "",
     "## Writing samples (anchor for tone)",
     writingSamplesBlock(ctx.writingSampleTexts),
+  ].join("\n");
+}
+
+export function assembleCoverLetterPrompt(ctx: PromptContext): AssembledPrompt {
+  const userStable = stableSections(ctx);
+  const userVolatile = [
     "",
     "## Calibration answers for this application",
     calibrationBlock(ctx.calibrationAnswers),
@@ -134,26 +167,16 @@ export function assembleCoverLetterPrompt(ctx: PromptContext): AssembledPrompt {
     jobBlock(ctx.jobApplication),
     "",
     "## Task",
-    "Draft a ~250-word cover letter for this role. Plain text. No markdown.",
-  ];
-  return { system: COVER_LETTER_SYSTEM, user: sections.join("\n") };
+    "Draft a 3-paragraph cover letter (~250 words) for this role, following the structure in the system prompt. Plain text, no markdown, no greeting, no sign-off.",
+  ].join("\n");
+  return { system: COVER_LETTER_SYSTEM, userStable, userVolatile };
 }
 
 export function assembleAnswerPrompt(
   ctx: PromptContext & { question: { text: string; key: string } },
 ): AssembledPrompt {
-  const sections = [
-    "## Applicant profile",
-    profileSummary(ctx.profile) || "(profile is empty)",
-    "",
-    "## Resume (extracted text)",
-    ctx.resumeText ? truncate(ctx.resumeText, 12000) : "(no resume on file)",
-    "",
-    "## Reusable answers from profile",
-    reusableAnswers(ctx.profile) || "(none)",
-    "",
-    "## Writing samples (anchor for tone)",
-    writingSamplesBlock(ctx.writingSampleTexts),
+  const userStable = stableSections(ctx);
+  const userVolatile = [
     "",
     "## Calibration answers for this application",
     calibrationBlock(ctx.calibrationAnswers),
@@ -166,6 +189,6 @@ export function assembleAnswerPrompt(
     "",
     "## Task",
     "Draft a single response to the question above. Plain text. No markdown.",
-  ];
-  return { system: ANSWER_SYSTEM, user: sections.join("\n") };
+  ].join("\n");
+  return { system: ANSWER_SYSTEM, userStable, userVolatile };
 }
