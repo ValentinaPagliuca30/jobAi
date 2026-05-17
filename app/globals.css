@@ -228,9 +228,9 @@
 }
 
 /* ---- Dark-mode rescue layer ----
-   Pages were authored with hard-coded slate-*/sky-* utility classes. Rather
+   Pages were authored with hard-coded slate and sky utility classes. Rather
    than touch every page, override the most common ones when dark mode is
-   active. Plus: kill the per-page <main> linear-gradient that otherwise stays
+   active. Plus: kill the per-page main linear-gradient that otherwise stays
    light-blue under dark mode. */
 
 [data-theme="dark"] main {

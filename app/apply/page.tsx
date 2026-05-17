@@ -127,8 +127,9 @@ export default function ApplyPage() {
             Paste the posting. Keep the rest focused.
           </h1>
           <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
-            One link in. We parse the company and role, create a draft, and
-            unlock calibration so the application can use your saved profile.
+            Paste a Greenhouse or Lever link. JobPilot uses your saved profile,
+            resume, and writing samples to draft an application you can edit
+            and send.
           </p>
 
           <form onSubmit={handleParse} className="mt-8 grid gap-3">
@@ -147,7 +148,7 @@ export default function ApplyPage() {
                 disabled={isSubmitting}
                 className="rounded-full bg-slate-950 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isSubmitting ? "Fetching posting…" : "Parse posting"}
+                {isSubmitting ? "Reading the posting…" : "Build my draft"}
               </button>
               <p className="text-xs text-slate-500">
                 Supported: <code>jobs.lever.co/...</code> and{" "}

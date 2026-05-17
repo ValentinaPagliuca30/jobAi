@@ -20,81 +20,194 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
-      <div className="mx-auto flex w-full max-w-7xl flex-col px-6 py-10 sm:px-8 lg:px-10">
-        <div className="mb-6 text-sm text-slate-500">
-          Home <span className="mx-2">/</span> Job URL Tool
+    <main className="text-slate-900">
+      {/* ───────── Hero — cool blue gradient ───────── */}
+      <section className="relative overflow-hidden bg-[linear-gradient(180deg,#eff6ff_0%,#ffffff_70%)] px-6 pb-20 pt-16 sm:px-8 sm:pt-20 lg:pb-28 lg:pt-24">
+        <div className="mx-auto max-w-5xl text-center">
+          <span className="inline-flex rounded-full bg-sky-50 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-sky-700 ring-1 ring-sky-200/60">
+            For CS students applying to SWE internships
+          </span>
+
+          <h1 className="mt-7 text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-6xl">
+            Apply to internships faster —
+            <br />
+            <span className="text-sky-700">without sounding like a bot.</span>
+          </h1>
+
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+            Paste a Greenhouse or Lever job link. JobPilot drafts a tailored
+            cover letter and short-answer responses in your voice, using your
+            resume and writing samples. You edit. You send.
+          </p>
+
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleStartApplication();
+            }}
+            className="mx-auto mt-10 flex max-w-xl flex-col gap-3 sm:flex-row"
+          >
+            <input
+              value={jobUrl}
+              onChange={(event) => setJobUrl(event.target.value)}
+              className="flex-1 rounded-full border border-slate-200 bg-white px-5 py-3.5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              placeholder="Paste a Greenhouse or Lever job link"
+              aria-label="Job posting URL"
+            />
+            <button
+              type="submit"
+              className="rounded-full bg-slate-950 px-7 py-3.5 text-sm font-medium text-white transition hover:bg-slate-800"
+            >
+              Build my draft
+            </button>
+          </form>
+
+          <Link
+            href="#how-it-works"
+            className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-700"
+          >
+            See how it works
+            <span aria-hidden="true">↓</span>
+          </Link>
         </div>
+      </section>
 
-        <section className="rounded-[2rem] bg-[linear-gradient(180deg,#d9efff_0%,#edf7ff_32%,#ffffff_100%)] p-4 shadow-[0_30px_80px_rgba(80,120,180,0.12)] sm:p-6 lg:p-8">
-          <div className="rounded-[2rem] border-[3px] border-dashed border-slate-300 bg-white px-6 py-10 sm:px-10 sm:py-14 lg:px-16 lg:py-16">
-            <div className="grid items-center gap-10 lg:grid-cols-[1fr_0.9fr]">
-              <div className="max-w-2xl">
-                <div className="mb-6 inline-flex rounded-full bg-sky-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
-                  Job application intake
-                </div>
-                <h1 className="text-4xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-5xl lg:text-6xl">
-                  Paste one job URL and start the application flow.
-                </h1>
-                <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
-                  This page should feel like a simple tool. You log in, paste a
-                  Greenhouse or Lever link, and the app uses your saved profile,
-                  uploads, and reusable answers to prepare the application.
-                </p>
-
-                <div className="mt-8">
-                  <label className="block text-sm font-medium text-slate-800">
-                    Job posting URL
-                  </label>
-                  <input
-                    value={jobUrl}
-                    onChange={(event) => setJobUrl(event.target.value)}
-                    className="mt-3 w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300"
-                    placeholder="Paste a Greenhouse or Lever job link here"
-                  />
-                </div>
-
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={handleStartApplication}
-                    className="rounded-full bg-slate-950 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
-                  >
-                    Start application
-                  </button>
-                  <Link
-                    href="/profile"
-                    className="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                  >
-                    Open profile
-                  </Link>
-                </div>
-              </div>
-
-              <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
-                <div className="rounded-[1.5rem] bg-white p-6 shadow-sm">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-100 text-3xl text-sky-700">
-                    ↗
-                  </div>
-                  <h2 className="mt-6 text-2xl font-semibold tracking-tight text-slate-950">
-                    One link in.
-                  </h2>
-                  <p className="mt-3 text-sm leading-7 text-slate-600">
-                    Behind this screen the app should pull from your profile:
-                    contact info, school data, work authorization, reusable
-                    answers, CV, transcript, and cover letter material.
-                  </p>
-                  <ul className="mt-5 space-y-3 text-sm text-slate-700">
-                    <li className="rounded-2xl bg-sky-50 px-4 py-3">Personal details and links</li>
-                    <li className="rounded-2xl bg-orange-50 px-4 py-3">CV, transcript, and cover letters</li>
-                    <li className="rounded-2xl bg-emerald-50 px-4 py-3">General answers reused across forms</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+      {/* ───────── How it works — warm amber ───────── */}
+      <section
+        id="how-it-works"
+        className="bg-amber-50 px-6 py-20 sm:px-8 lg:py-24"
+      >
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">
+              How it works
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+              Three steps from job link to draft.
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-600">
+              You stay in control of the writing. JobPilot just makes the first
+              draft a lot less painful.
+            </p>
           </div>
-        </section>
-      </div>
+
+          <div className="mt-14 grid gap-6 lg:grid-cols-3">
+            {[
+              {
+                step: "01",
+                title: "Save your profile once.",
+                body: "Upload your resume, 2–3 writing samples, and standard application details. JobPilot stores them and reuses them across every application.",
+              },
+              {
+                step: "02",
+                title: "Paste a URL, answer 3 questions.",
+                body: "Drop in a Greenhouse or Lever posting. Answer three quick calibration questions about why this role, why this company, what to emphasize.",
+              },
+              {
+                step: "03",
+                title: "Edit your draft. Send.",
+                body: "JobPilot generates a cover letter and short-answer drafts in your voice. You edit them, mark the application submitted, and move on.",
+              },
+            ].map(({ step, title, body }) => (
+              <div
+                key={step}
+                className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-amber-100"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 font-mono text-sm font-semibold text-amber-700">
+                  {step}
+                </div>
+                <h3 className="mt-5 text-xl font-semibold tracking-tight text-slate-950">
+                  {title}
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── What you get — soft mint ───────── */}
+      <section className="bg-emerald-50 px-6 py-20 sm:px-8 lg:py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
+              What you get
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+              Drafts that read like you, not like AI.
+            </h2>
+          </div>
+
+          <div className="mt-14 grid gap-6 lg:grid-cols-3">
+            {[
+              {
+                title: "Cover letters in your voice.",
+                body: "Trained on your past writing samples — not generic prompts. Three-paragraph structure, grounded in your real experience, no buzzwords.",
+              },
+              {
+                title: "Short answers, ready to edit.",
+                body: "JobPilot extracts the posting's questions and drafts an answer to each. Original draft kept separately from your edits — never overwritten.",
+              },
+              {
+                title: "Your profile, reused everywhere.",
+                body: "Standard fields, links, work authorization, school details — saved once, applied to every Greenhouse or Lever posting you paste.",
+              },
+            ].map(({ title, body }) => (
+              <div
+                key={title}
+                className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-emerald-100"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                </div>
+                <h3 className="mt-5 text-xl font-semibold tracking-tight text-slate-950">
+                  {title}
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── Closing CTA — vibrant accent blue ───────── */}
+      <section className="bg-[var(--accent)] px-6 py-20 text-white sm:px-8 lg:py-24">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Ready to apply?
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-white/85">
+            Sign in, upload a resume, and paste your first job link. Your next
+            draft is one URL away.
+          </p>
+          <div className="mt-9 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/apply"
+              className="rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+            >
+              Start my draft
+            </Link>
+            <Link
+              href="/profile"
+              className="rounded-full border border-white/40 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
+            >
+              Open profile
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
