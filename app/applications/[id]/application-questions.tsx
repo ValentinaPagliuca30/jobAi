@@ -11,6 +11,8 @@ type ApplicationQuestionsProps = {
   initialQuestions: ApplicationQuestionRecord[];
   initialAnswers: ApplicationAnswerRecord[];
   profileAnswers: ApplicationAnswerValues;
+  canGenerate: boolean;
+  generateBlockedReason: string | null;
 };
 
 function answerKeyForQuestion(question: ApplicationQuestionRecord) {
@@ -43,6 +45,8 @@ export function ApplicationQuestions({
   initialQuestions,
   initialAnswers,
   profileAnswers,
+  canGenerate,
+  generateBlockedReason,
 }: ApplicationQuestionsProps) {
   const [questions, setQuestions] =
     useState<ApplicationQuestionRecord[]>(initialQuestions);
@@ -287,7 +291,12 @@ export function ApplicationQuestions({
                   <button
                     type="button"
                     onClick={() => handleGenerate(question)}
-                    disabled={generatingId === question.id}
+                    disabled={generatingId === question.id || !canGenerate}
+                    title={
+                      !canGenerate
+                        ? generateBlockedReason ?? undefined
+                        : undefined
+                    }
                     className="rounded-full bg-slate-950 px-3 py-1 text-xs font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {generatingId === question.id
@@ -322,6 +331,12 @@ export function ApplicationQuestions({
             );
           })
         )}
+
+        {!canGenerate && generateBlockedReason && questions.length > 0 ? (
+          <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            {generateBlockedReason}
+          </p>
+        ) : null}
 
         {statusMessage ? (
           <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">

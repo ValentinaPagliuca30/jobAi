@@ -5,6 +5,7 @@ import { assembleCoverLetterPrompt } from "@/lib/ai-prompts";
 import { generateStub } from "@/lib/ai-stub";
 import { generateWithClaude, isAnthropicConfigured } from "@/lib/ai-client";
 import { describeError } from "@/lib/error";
+import { checkReadyToGenerate } from "@/lib/generation-readiness";
 import {
   getJobApplicationById,
   setCoverLetterDraft,
@@ -48,6 +49,14 @@ export async function POST(request: Request) {
         applicationId: body.applicationId,
       }),
     ]);
+
+    const readiness = checkReadyToGenerate({ profile, uploads, application });
+    if (!readiness.ready) {
+      return NextResponse.json(
+        { error: readiness.reason, code: readiness.code },
+        { status: 400 },
+      );
+    }
 
     const resumeUpload =
       uploads.find(

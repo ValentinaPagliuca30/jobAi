@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { listApplicationAnswers } from "@/lib/application-answers";
 import { listApplicationQuestions } from "@/lib/application-questions-store";
+import { checkReadyToGenerate } from "@/lib/generation-readiness";
 import { getJobApplicationById } from "@/lib/job-applications";
 import { listProfileUploads } from "@/lib/profile-uploads";
 import { loadProfileForUser } from "@/lib/profile-store";
@@ -101,6 +102,14 @@ export default async function ApplicationDetailPage({
   const missingFields = profilePreviewFields.filter(
     (f) => f.value.trim() === "",
   );
+
+  const readiness = checkReadyToGenerate({
+    profile,
+    uploads: allUploads,
+    application,
+  });
+  const canGenerate = readiness.ready;
+  const generateBlockedReason = readiness.ready ? null : readiness.reason;
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
@@ -267,6 +276,8 @@ export default async function ApplicationDetailPage({
               initialDraft={application.coverLetterDraft}
               initialEdited={application.coverLetterEdited}
               initialGeneratedAt={application.coverLetterGeneratedAt}
+              canGenerate={canGenerate}
+              generateBlockedReason={generateBlockedReason}
             />
 
             <ApplicationQuestions
@@ -274,6 +285,8 @@ export default async function ApplicationDetailPage({
               initialQuestions={postingQuestions}
               initialAnswers={savedAnswers}
               profileAnswers={profile.applicationAnswers}
+              canGenerate={canGenerate}
+              generateBlockedReason={generateBlockedReason}
             />
 
             <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">

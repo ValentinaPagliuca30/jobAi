@@ -7,6 +7,8 @@ type CoverLetterProps = {
   initialDraft: string | null;
   initialEdited: string | null;
   initialGeneratedAt: string | null;
+  canGenerate: boolean;
+  generateBlockedReason: string | null;
 };
 
 export function CoverLetter({
@@ -14,6 +16,8 @@ export function CoverLetter({
   initialDraft,
   initialEdited,
   initialGeneratedAt,
+  canGenerate,
+  generateBlockedReason,
 }: CoverLetterProps) {
   const [draft, setDraft] = useState<string | null>(initialDraft);
   const [edited, setEdited] = useState<string | null>(initialEdited);
@@ -117,7 +121,8 @@ export function CoverLetter({
           <button
             type="button"
             onClick={handleGenerate}
-            disabled={isGenerating}
+            disabled={isGenerating || !canGenerate}
+            title={!canGenerate ? generateBlockedReason ?? undefined : undefined}
             className="rounded-full bg-slate-950 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isGenerating
@@ -184,6 +189,12 @@ export function CoverLetter({
       <p className="mt-2 text-xs text-slate-500">
         {wordCount} word{wordCount === 1 ? "" : "s"}
       </p>
+
+      {!canGenerate && generateBlockedReason ? (
+        <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {generateBlockedReason}
+        </p>
+      ) : null}
 
       {statusMessage ? (
         <p className="mt-3 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
