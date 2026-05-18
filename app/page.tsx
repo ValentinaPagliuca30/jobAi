@@ -182,26 +182,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ───────── Closing CTA — vibrant accent blue ───────── */}
-      <section className="bg-[var(--accent)] px-6 py-20 text-white sm:px-8 lg:py-24">
+      {/* ───────── Closing CTA — always dark, theme-stable ─────────
+          Uses arbitrary value `bg-[#0a0a0f]` (not `bg-slate-950`) on purpose
+          so the dark-mode rescue layer in globals.css does NOT flip it to
+          white. That rescue is correct for inline primary buttons, but would
+          invert this whole hero band in dark mode. */}
+      <section className="bg-[#0a0a0f] px-6 py-20 text-white sm:px-8 lg:py-24">
         <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h2 className="text-3xl font-semibold tracking-tight !text-white sm:text-4xl">
             Ready to apply?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-white/85">
+          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-white/75">
             Sign in, upload a resume, and paste your first job link. Your next
             draft is one URL away.
           </p>
           <div className="mt-9 flex flex-wrap justify-center gap-3">
             <Link
               href="/apply"
-              className="rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+              className="rounded-full bg-white px-7 py-3.5 text-sm font-semibold !text-[#0a0a0f] transition hover:bg-slate-100"
             >
               Start my draft
             </Link>
             <Link
               href="/profile"
-              className="rounded-full border border-white/40 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="rounded-full border border-white/30 px-7 py-3.5 text-sm font-semibold !text-white transition hover:bg-white/10"
             >
               Open profile
             </Link>

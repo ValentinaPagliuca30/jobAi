@@ -272,23 +272,39 @@
 [data-theme="dark"] .text-sky-700 {
   color: #5ac8fa !important;
 }
+/* Pastel "section wash" backgrounds in dark mode: kept at very low opacity
+   so the section identity is hinted (warm/cool tone) without becoming
+   neon-on-black. 0.16 looked toxic; 0.04 reads as a subtle hue shift. */
 [data-theme="dark"] .bg-sky-50 {
-  background-color: rgba(90, 200, 250, 0.12) !important;
+  background-color: rgba(90, 200, 250, 0.04) !important;
 }
 [data-theme="dark"] .bg-amber-50 {
-  background-color: rgba(255, 159, 10, 0.16) !important;
+  background-color: rgba(255, 159, 10, 0.04) !important;
 }
 [data-theme="dark"] .text-amber-700 {
-  color: #ffd60a !important;
+  color: #ffb340 !important;
 }
 [data-theme="dark"] .bg-emerald-50 {
-  background-color: rgba(48, 209, 88, 0.16) !important;
+  background-color: rgba(48, 209, 88, 0.04) !important;
 }
 [data-theme="dark"] .text-emerald-700 {
-  color: #30d158 !important;
+  color: #4cd964 !important;
 }
 [data-theme="dark"] .text-rose-700 {
   color: #ff453a !important;
+}
+
+/* Pastel card rings — soften the bright-colored ring lines that were
+   meant to define light-mode cards but render as glowing edges in dark mode. */
+[data-theme="dark"] .ring-amber-100,
+[data-theme="dark"] .ring-emerald-100,
+[data-theme="dark"] .ring-sky-100 {
+  --tw-ring-color: var(--line) !important;
+}
+[data-theme="dark"] .bg-amber-100,
+[data-theme="dark"] .bg-emerald-100,
+[data-theme="dark"] .bg-sky-100 {
+  background-color: var(--surface-soft) !important;
 }
 
 /* Dark-mode treatment of the dark "primary action" buttons used inline on
