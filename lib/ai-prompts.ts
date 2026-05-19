@@ -83,8 +83,10 @@ function profileSummary(profile: PersistedProfilePayload): string {
       ? `Education: ${[b.degree, b.program, b.school].filter(Boolean).join(", ")}`
       : null,
     b.graduationDate ? `Graduation: ${b.graduationDate}` : null,
+    b.gpa ? `GPA: ${b.gpa}` : null,
     b.location ? `Location: ${b.location}` : null,
     b.workAuthorization ? `Work auth: ${b.workAuthorization}` : null,
+    b.noticePeriod ? `Notice period: ${b.noticePeriod}` : null,
     b.linkedinUrl ? `LinkedIn: ${b.linkedinUrl}` : null,
     b.githubUrl ? `GitHub: ${b.githubUrl}` : null,
     b.portfolioUrl ? `Portfolio: ${b.portfolioUrl}` : null,

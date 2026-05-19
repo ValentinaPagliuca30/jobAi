@@ -127,14 +127,21 @@ export function ApplicationPrep({
             </a>
             .
           </p>
+        ) : resumeOptions.length === 1 ? (
+          <p className="mt-3 text-sm text-slate-700">
+            Using{" "}
+            <span className="font-medium text-slate-900">
+              {resumeOptions[0].originalFilename}
+            </span>{" "}
+            from your profile.
+          </p>
         ) : (
           <select
-            value={resumeId ?? ""}
+            value={resumeId ?? resumeOptions[0].id}
             onChange={(event) => handleResumeChange(event.target.value)}
             disabled={isSavingResume}
             className="mt-3 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900"
           >
-            <option value="">— No resume selected —</option>
             {resumeOptions.map((resume) => (
               <option key={resume.id} value={resume.id}>
                 {resume.originalFilename}

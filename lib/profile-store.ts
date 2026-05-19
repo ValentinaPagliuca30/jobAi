@@ -9,7 +9,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase-admin";
 const profilesTable = "profiles";
 const answersTable = "profile_answers";
 const profileSelect =
-  "clerk_user_id, full_name, preferred_name, email, phone, location, linkedin_url, github_url, portfolio_url, school, degree, program, graduation_date, work_authorization, sponsorship_answer, gender, race_ethnicity, veteran_status, disability_status";
+  "clerk_user_id, full_name, preferred_name, email, phone, location, linkedin_url, github_url, portfolio_url, school, degree, program, graduation_date, gpa, work_authorization, sponsorship_answer, notice_period, gender, race_ethnicity, veteran_status, disability_status";
 
 export async function loadProfileForUser(
   clerkUserId: string,
@@ -52,10 +52,12 @@ export async function loadProfileForUser(
       degree: (profileRow?.degree as string | null) ?? "",
       program: (profileRow?.program as string | null) ?? "",
       graduationDate: (profileRow?.graduation_date as string | null) ?? "",
+      gpa: (profileRow?.gpa as string | null) ?? "",
       workAuthorization:
         (profileRow?.work_authorization as string | null) ?? "",
       sponsorshipAnswer:
         (profileRow?.sponsorship_answer as string | null) ?? "",
+      noticePeriod: (profileRow?.notice_period as string | null) ?? "",
     },
     identityInfo: {
       ...emptyIdentityProfileValues,

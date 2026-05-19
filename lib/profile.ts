@@ -11,6 +11,7 @@ export const basicFieldDefinitions = [
   { key: "degree", label: "Degree", placeholder: "Master's" },
   { key: "program", label: "Program", placeholder: "MPCS" },
   { key: "graduationDate", label: "Graduation date", placeholder: "June 2026" },
+  { key: "gpa", label: "GPA", placeholder: "3.8 / 4.0" },
   {
     key: "workAuthorization",
     label: "Work authorization",
@@ -20,6 +21,11 @@ export const basicFieldDefinitions = [
     key: "sponsorshipAnswer",
     label: "Sponsorship answer",
     placeholder: "Exact wording you want reused",
+  },
+  {
+    key: "noticePeriod",
+    label: "Notice period",
+    placeholder: "Available immediately / 2 weeks / 1 month",
   },
 ] as const;
 
@@ -82,8 +88,10 @@ export const emptyBasicProfileValues: BasicProfileValues = {
   degree: "",
   program: "",
   graduationDate: "",
+  gpa: "",
   workAuthorization: "",
   sponsorshipAnswer: "",
+  noticePeriod: "",
 };
 
 export const emptyIdentityProfileValues: IdentityProfileValues = {

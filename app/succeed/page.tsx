@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { listSubmittedApplications } from "@/lib/submitted-applications";
+import { ResponseStatusSelect } from "./response-status-select";
 
 function formatAppliedDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -190,9 +191,10 @@ export default async function SucceedPage() {
                         {formatAppliedDate(application.appliedAt)}
                       </td>
                       <td className="px-3 py-4">
-                        <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                          Applied
-                        </span>
+                        <ResponseStatusSelect
+                          applicationId={application.id}
+                          initialStatus={application.responseStatus}
+                        />
                       </td>
                       <td className="px-3 py-4 text-right">
                         <a

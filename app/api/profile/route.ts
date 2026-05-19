@@ -12,7 +12,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase-admin";
 const profilesTable = "profiles";
 const answersTable = "profile_answers";
 const profileSelect =
-  "clerk_user_id, full_name, preferred_name, email, phone, location, linkedin_url, github_url, portfolio_url, school, degree, program, graduation_date, work_authorization, sponsorship_answer, gender, race_ethnicity, veteran_status, disability_status";
+  "clerk_user_id, full_name, preferred_name, email, phone, location, linkedin_url, github_url, portfolio_url, school, degree, program, graduation_date, gpa, work_authorization, sponsorship_answer, notice_period, gender, race_ethnicity, veteran_status, disability_status";
 
 function toProfileRow(payload: PersistedProfilePayload, clerkUserId: string) {
   return {
@@ -29,8 +29,10 @@ function toProfileRow(payload: PersistedProfilePayload, clerkUserId: string) {
     degree: payload.basicInfo.degree,
     program: payload.basicInfo.program,
     graduation_date: payload.basicInfo.graduationDate,
+    gpa: payload.basicInfo.gpa,
     work_authorization: payload.basicInfo.workAuthorization,
     sponsorship_answer: payload.basicInfo.sponsorshipAnswer,
+    notice_period: payload.basicInfo.noticePeriod,
     gender: payload.identityInfo.gender,
     race_ethnicity: payload.identityInfo.raceEthnicity,
     veteran_status: payload.identityInfo.veteranStatus,
@@ -102,8 +104,10 @@ function toProfilePayload(input: {
       degree: profileRow?.degree ?? "",
       program: profileRow?.program ?? "",
       graduationDate: profileRow?.graduation_date ?? "",
+      gpa: profileRow?.gpa ?? "",
       workAuthorization: profileRow?.work_authorization ?? "",
       sponsorshipAnswer: profileRow?.sponsorship_answer ?? "",
+      noticePeriod: profileRow?.notice_period ?? "",
     },
     identityInfo: {
       ...emptyIdentityProfileValues,

@@ -36,6 +36,7 @@ export function SubmitApplicationButton({
       }
 
       setMessage("Application submitted and saved to Succeed.");
+      router.push("/succeed");
       router.refresh();
     } catch (error) {
       setMessage(

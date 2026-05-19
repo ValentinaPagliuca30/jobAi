@@ -6,7 +6,6 @@ import { checkReadyToGenerate } from "@/lib/generation-readiness";
 import { getJobApplicationById } from "@/lib/job-applications";
 import { listProfileUploads } from "@/lib/profile-uploads";
 import { loadProfileForUser } from "@/lib/profile-store";
-import { answerBlockDefinitions } from "@/lib/profile";
 import { ApplicationPrep } from "./application-prep";
 import { ApplicationQuestions } from "./application-questions";
 import { AutofillInstructions } from "./autofill-instructions";
@@ -79,30 +78,6 @@ export default async function ApplicationDetailPage({
   const resumeOptions = allUploads.filter(
     (upload) => upload.kind === "resume",
   );
-  const writingSamples = allUploads.filter(
-    (upload) =>
-      upload.kind === "writing_sample" || upload.kind === "cover_letter_sample",
-  );
-
-  const profilePreviewFields: Array<{ label: string; value: string }> = [
-    { label: "Full name", value: profile.basicInfo.fullName },
-    { label: "Email", value: profile.basicInfo.email },
-    { label: "Phone", value: profile.basicInfo.phone },
-    { label: "Location", value: profile.basicInfo.location },
-    { label: "School", value: profile.basicInfo.school },
-    { label: "Degree", value: profile.basicInfo.degree },
-    { label: "Program", value: profile.basicInfo.program },
-    { label: "Graduation", value: profile.basicInfo.graduationDate },
-    { label: "Work auth", value: profile.basicInfo.workAuthorization },
-    { label: "LinkedIn", value: profile.basicInfo.linkedinUrl },
-    { label: "GitHub", value: profile.basicInfo.githubUrl },
-    { label: "Portfolio", value: profile.basicInfo.portfolioUrl },
-  ];
-
-  const filledFields = profilePreviewFields.filter((f) => f.value.trim() !== "");
-  const missingFields = profilePreviewFields.filter(
-    (f) => f.value.trim() === "",
-  );
 
   const readiness = checkReadyToGenerate({
     profile,
@@ -156,154 +131,46 @@ export default async function ApplicationDetailPage({
           </div>
         </section>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">
-              What we&rsquo;ll use for this application
+        <div className="mt-6 space-y-6">
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Job description
             </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-              Profile preview
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              These values come from your{" "}
-              <Link href="/profile" className="font-medium text-sky-700 underline">
-                profile
-              </Link>{" "}
-              and will be used to autofill standard fields.
+            <p className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap text-sm leading-7 text-slate-700">
+              {application.jobDescription || "Job description not captured."}
             </p>
+          </div>
 
-            {filledFields.length > 0 ? (
-              <dl className="mt-5 grid gap-3 sm:grid-cols-2">
-                {filledFields.map((field) => (
-                  <div
-                    key={field.label}
-                    className="rounded-2xl bg-slate-50 px-4 py-3"
-                  >
-                    <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                      {field.label}
-                    </dt>
-                    <dd className="mt-1 truncate text-sm text-slate-900">
-                      {field.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            ) : (
-              <p className="mt-4 rounded-2xl bg-[var(--peach)] px-4 py-3 text-sm text-[var(--ink)]">
-                Your profile is empty. Fill it in on{" "}
-                <Link href="/profile" className="font-medium underline">
-                  Profile
-                </Link>{" "}
-                so it can be reused here.
-              </p>
-            )}
+          <ApplicationPrep
+            applicationId={application.id}
+            resumeOptions={resumeOptions}
+            initialResumeId={application.selectedResumeId}
+            initialAnswers={savedAnswers}
+          />
 
-            {missingFields.length > 0 ? (
-              <p className="mt-4 text-xs text-slate-500">
-                Missing:{" "}
-                {missingFields.map((f) => f.label).join(", ")}.
-              </p>
-            ) : null}
+          <CoverLetter
+            applicationId={application.id}
+            initialDraft={application.coverLetterDraft}
+            initialEdited={application.coverLetterEdited}
+            initialGeneratedAt={application.coverLetterGeneratedAt}
+            canGenerate={canGenerate}
+            generateBlockedReason={generateBlockedReason}
+          />
 
-            <div className="mt-6 rounded-2xl bg-slate-50 px-4 py-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                Reusable answers from profile
-              </p>
-              <ul className="mt-3 space-y-2 text-sm text-slate-700">
-                {answerBlockDefinitions.map((block) => {
-                  const value = profile.applicationAnswers[block] ?? "";
-                  return (
-                    <li
-                      key={block}
-                      className="rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200"
-                    >
-                      <p className="text-xs font-semibold text-slate-500">
-                        {block}
-                      </p>
-                      <p className="mt-1 line-clamp-2 text-sm text-slate-800">
-                        {value.trim() === "" ? (
-                          <span className="text-slate-400">— empty —</span>
-                        ) : (
-                          value
-                        )}
-                      </p>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+          <ApplicationQuestions
+            applicationId={application.id}
+            initialQuestions={postingQuestions}
+            initialAnswers={savedAnswers}
+            profileAnswers={profile.applicationAnswers}
+            canGenerate={canGenerate}
+            generateBlockedReason={generateBlockedReason}
+          />
 
-            {writingSamples.length > 0 ? (
-              <div className="mt-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Writing samples available
-                </p>
-                <ul className="mt-3 space-y-2">
-                  {writingSamples.map((sample) => (
-                    <li
-                      key={sample.id}
-                      className="flex items-center justify-between rounded-2xl bg-white px-4 py-2 ring-1 ring-slate-200"
-                    >
-                      <span className="truncate text-sm text-slate-700">
-                        {sample.originalFilename}
-                      </span>
-                      {sample.downloadUrl ? (
-                        <a
-                          href={sample.downloadUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs font-medium text-sky-700 underline"
-                        >
-                          View
-                        </a>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </section>
+          <AutofillInstructions
+            applicationId={application.id}
+            clerkUserId={userId}
+          />
 
-          <section className="space-y-6">
-            <ApplicationPrep
-              applicationId={application.id}
-              resumeOptions={resumeOptions}
-              initialResumeId={application.selectedResumeId}
-              initialAnswers={savedAnswers}
-            />
-
-            <CoverLetter
-              applicationId={application.id}
-              initialDraft={application.coverLetterDraft}
-              initialEdited={application.coverLetterEdited}
-              initialGeneratedAt={application.coverLetterGeneratedAt}
-              canGenerate={canGenerate}
-              generateBlockedReason={generateBlockedReason}
-            />
-
-            <ApplicationQuestions
-              applicationId={application.id}
-              initialQuestions={postingQuestions}
-              initialAnswers={savedAnswers}
-              profileAnswers={profile.applicationAnswers}
-              canGenerate={canGenerate}
-              generateBlockedReason={generateBlockedReason}
-            />
-
-            <AutofillInstructions
-              applicationId={application.id}
-              clerkUserId={userId}
-            />
-
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Job description
-              </p>
-              <p className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap text-sm leading-7 text-slate-700">
-                {application.jobDescription || "Job description not captured."}
-              </p>
-            </div>
-          </section>
         </div>
       </div>
     </main>

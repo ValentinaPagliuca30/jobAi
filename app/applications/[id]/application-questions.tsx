@@ -1,10 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { ApplicationAnswerRecord } from "@/lib/application-answers";
 import type { ApplicationQuestionRecord } from "@/lib/application-questions-store";
 import type { ApplicationAnswerValues } from "@/lib/profile";
 import { matchProfileAnswer } from "@/lib/profile-answer-match";
+
+// Questions whose label maps to a standard profile field (Basic info or
+// Self-identification) already saved in /profile. Hiding them from the editor
+// reduces noise — the worker autofills text inputs, and for demographic Selects
+// the user picks on the Greenhouse page directly (they're option-based, not
+// AI-draftable).
+const standardFieldPatterns: ReadonlyArray<RegExp> = [
+  /\bfirst\s*name\b/,
+  /\blast\s*name\b/,
+  /\bfull\s*name\b/,
+  /\bpreferred\s*(first\s*)?name\b/,
+  /\bemail\b/,
+  /\bphone\b/,
+  /\blinkedin\b/,
+  /\bgithub\b/,
+  /\bportfolio\b/,
+  /\bwebsite\b/,
+  /\blocation\s*\(?city\)?\b/,
+  /\bschool\b/,
+  /\buniversity\b/,
+  /\bresume\b/,
+  /\bcv\b/,
+  /\bcover\s*letter\b/,
+  // Self-identification demographics — saved in profile identityInfo.
+  // No trailing \b because Greenhouse sometimes uses PascalCase compound
+  // labels like "DisabilityStatus" / "VeteranStatus" which lowercase to one
+  // word with no internal boundary.
+  /\bgender/,
+  /\brace/,
+  /\bethnicity/,
+  /\bhispanic/,
+  /\blatino/,
+  /\bveteran/,
+  /\bdisability/,
+  // Other Basic info fields
+  /\bgpa\b/,
+  /\bgrade\s*point\s*average\b/,
+  /\bgraduat(?:e|ion)/,
+];
+
+function isStandardField(question: ApplicationQuestionRecord): boolean {
+  if (question.questionType?.includes("file")) return true;
+  const label = question.questionText.toLowerCase();
+  return standardFieldPatterns.some((re) => re.test(label));
+}
 
 type ApplicationQuestionsProps = {
   applicationId: string;
@@ -118,11 +163,13 @@ export function ApplicationQuestions({
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
-            answers: questions.map((question) => ({
-              questionKey: answerKeyForQuestion(question),
-              questionText: question.questionText,
-              content: values[question.id] ?? "",
-            })),
+            answers: questions
+              .filter((q) => !isStandardField(q))
+              .map((question) => ({
+                questionKey: answerKeyForQuestion(question),
+                questionText: question.questionText,
+                content: values[question.id] ?? "",
+              })),
           }),
         },
       );
@@ -183,6 +230,12 @@ export function ApplicationQuestions({
     setValues((current) => ({ ...current, [questionId]: draft }));
   }
 
+  const customQuestions = useMemo(
+    () => questions.filter((q) => !isStandardField(q)),
+    [questions],
+  );
+  const standardCount = questions.length - customQuestions.length;
+
   return (
     <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -191,9 +244,18 @@ export function ApplicationQuestions({
             Application questions
           </p>
           <p className="mt-1 text-sm text-slate-600">
-            {questions.length === 0
-              ? "No questions scraped yet."
-              : `${questions.length} question${questions.length === 1 ? "" : "s"} from the posting.`}
+            {customQuestions.length === 0
+              ? questions.length === 0
+                ? "No questions scraped yet."
+                : "No custom questions — the worker autofills everything from your profile."
+              : `${customQuestions.length} posting-specific question${customQuestions.length === 1 ? "" : "s"}.`}
+            {standardCount > 0 && customQuestions.length > 0 ? (
+              <span className="block text-xs text-slate-500">
+                {standardCount} standard field
+                {standardCount === 1 ? "" : "s"} (name, email, phone, links…)
+                hidden — the worker autofills them.
+              </span>
+            ) : null}
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
@@ -205,7 +267,7 @@ export function ApplicationQuestions({
           >
             {isRefreshing ? "Refreshing…" : "Refresh from ATS"}
           </button>
-          {questions.length > 0 ? (
+          {customQuestions.length > 0 ? (
             <button
               type="button"
               onClick={handleSave}
@@ -219,14 +281,16 @@ export function ApplicationQuestions({
       </div>
 
       <div className="mt-5 flex flex-col gap-4">
-        {questions.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-            We could not find a question list for this posting. Use{" "}
-            <strong>Refresh from ATS</strong> to retry. Currently only
-            Greenhouse postings are scraped.
-          </p>
+        {customQuestions.length === 0 ? (
+          questions.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+              We could not find a question list for this posting. Use{" "}
+              <strong>Refresh from ATS</strong> to retry. Currently only
+              Greenhouse postings are scraped.
+            </p>
+          ) : null
         ) : (
-          questions.map((question) => {
+          customQuestions.map((question) => {
             const fieldValue = values[question.id] ?? "";
             const suggestion = matchProfileAnswer(
               question.questionText,

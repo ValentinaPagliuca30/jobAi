@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, startTransition, useEffect, useState } from "react";
 import { parseJobPostingUrl, type ParsedJobPosting } from "@/lib/job-url";
 
@@ -24,6 +25,7 @@ type IntakeApplication = {
 };
 
 export default function ApplyPage() {
+  const router = useRouter();
   const [jobUrl, setJobUrl] = useState("");
   const [parsedPosting, setParsedPosting] = useState<ParsedJobPosting | null>(
     null,
@@ -97,6 +99,8 @@ export default function ApplyPage() {
       }
 
       setApplication(payload.application);
+      router.push(`/applications/${payload.application.id}`);
+      return;
     } catch (error) {
       setErrorMessage(
         error instanceof Error

@@ -154,23 +154,13 @@ export default function ProfilePage() {
         </div>
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-7 py-8 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
-                Profile
-              </p>
-              <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-5xl">
-                Complete your profile once, then reuse it for every application.
-              </h1>
-            </div>
-            <button
-              type="button"
-              onClick={handleSaveProfile}
-              disabled={isLoading || isSaving}
-              className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSaving ? "Saving..." : "Save profile"}
-            </button>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+              Profile
+            </p>
+            <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-5xl">
+              Complete your profile once, then reuse it for every application.
+            </h1>
           </div>
           <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
             Fill this in once. Every time you paste a job link, JobPilot pulls
@@ -228,9 +218,6 @@ export default function ProfilePage() {
                       Personal, academic, and eligibility details
                     </h2>
                   </div>
-                  <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
-                    Active tab
-                  </span>
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -238,7 +225,7 @@ export default function ProfilePage() {
                     <label key={key} className="block text-sm font-medium text-slate-800">
                       {label}
                       <input
-                        value={basicInfo[key]}
+                        value={basicInfo[key] ?? ""}
                         onChange={(event) => updateBasicField(key, event.target.value)}
                         className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300"
                         placeholder={placeholder}
@@ -246,6 +233,17 @@ export default function ProfilePage() {
                       />
                     </label>
                   ))}
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSaveProfile}
+                    disabled={isLoading || isSaving}
+                    className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isSaving ? "Saving..." : "Save profile"}
+                  </button>
                 </div>
               </article>
 
@@ -265,7 +263,7 @@ export default function ProfilePage() {
                     <label key={key} className="block text-sm font-medium text-slate-800">
                       {label}
                       <input
-                        value={identityInfo[key]}
+                        value={identityInfo[key] ?? ""}
                         onChange={(event) => updateIdentityField(key, event.target.value)}
                         className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300"
                         placeholder={placeholder}
@@ -273,6 +271,17 @@ export default function ProfilePage() {
                       />
                     </label>
                   ))}
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSaveProfile}
+                    disabled={isLoading || isSaving}
+                    className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isSaving ? "Saving..." : "Save profile"}
+                  </button>
                 </div>
               </article>
             </div>
@@ -306,7 +315,7 @@ export default function ProfilePage() {
                 <label key={block} className="block text-sm font-medium text-slate-800">
                   {block}
                   <textarea
-                    value={applicationAnswers[block]}
+                    value={applicationAnswers[block] ?? ""}
                     onChange={(event) => updateAnswerField(block, event.target.value)}
                     className="mt-2 min-h-32 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300"
                     placeholder={`Write a reusable answer for: ${block}`}
@@ -314,6 +323,17 @@ export default function ProfilePage() {
                   />
                 </label>
               ))}
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={handleSaveProfile}
+                disabled={isLoading || isSaving}
+                className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSaving ? "Saving..." : "Save profile"}
+              </button>
             </div>
           </section>
         )}

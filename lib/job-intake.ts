@@ -164,20 +164,82 @@ function extractDescription(html: string) {
 }
 
 function extractLocation(html: string) {
+  type Address = {
+    addressLocality?: string;
+    addressRegion?: string;
+    addressCountry?: string;
+  };
+
+  function formatAddress(address: Address | undefined): string | null {
+    if (!address) return null;
+    const parts = [
+      address.addressLocality,
+      address.addressRegion,
+      address.addressCountry,
+    ].filter((p): p is string => typeof p === "string" && p.trim() !== "");
+    return parts.length > 0 ? parts.join(", ") : null;
+  }
+
+  // 1) JSON-LD: check jobLocationType for TELECOMMUTE (Remote)
+  //    and check jobLocation as object or array.
   for (const object of extractJsonObjects(html)) {
+    const locationType = object.jobLocationType;
+    if (
+      typeof locationType === "string" &&
+      locationType.toUpperCase() === "TELECOMMUTE"
+    ) {
+      return "Remote";
+    }
+
     const rawLocation = object.jobLocation;
 
-    if (rawLocation && typeof rawLocation === "object" && !Array.isArray(rawLocation)) {
-      const address = (rawLocation as { address?: { addressLocality?: string } }).address;
+    if (Array.isArray(rawLocation)) {
+      for (const item of rawLocation) {
+        if (item && typeof item === "object") {
+          const address = (item as { address?: Address }).address;
+          const formatted = formatAddress(address);
+          if (formatted) return formatted;
+        }
+      }
+    } else if (
+      rawLocation &&
+      typeof rawLocation === "object" &&
+      !Array.isArray(rawLocation)
+    ) {
+      const address = (rawLocation as { address?: Address }).address;
+      const formatted = formatAddress(address);
+      if (formatted) return formatted;
+    }
 
-      if (address?.addressLocality) {
-        return address.addressLocality;
+    // applicantLocationRequirements is sometimes present for remote-only roles
+    const applicantLoc = object.applicantLocationRequirements;
+    if (applicantLoc && typeof applicantLoc === "object") {
+      const name = (applicantLoc as { name?: string }).name;
+      if (typeof name === "string" && name.trim() !== "") {
+        return cleanText(name);
       }
     }
   }
 
-  const locationMatch = html.match(/"location"\s*:\s*"([^"]+)"/i);
+  // 2) Greenhouse-specific visible markup: <div class="job__location">…</div>
+  //    or <div class="location">…</div>
+  const greenhousePatterns = [
+    /<div[^>]+class=["'][^"']*job[_-]?location[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
+    /<div[^>]+class=["'][^"']*location[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
+    /<span[^>]+class=["'][^"']*location[^"']*["'][^>]*>([\s\S]*?)<\/span>/i,
+  ];
+  for (const pattern of greenhousePatterns) {
+    const match = html.match(pattern);
+    if (match?.[1]) {
+      const text = cleanText(match[1]);
+      if (text && text.length < 80) {
+        return text;
+      }
+    }
+  }
 
+  // 3) Last-ditch: a quoted "location" key anywhere in the markup.
+  const locationMatch = html.match(/"location"\s*:\s*"([^"]+)"/i);
   if (locationMatch?.[1]) {
     return cleanText(locationMatch[1]);
   }
