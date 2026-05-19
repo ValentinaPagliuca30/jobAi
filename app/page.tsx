@@ -21,8 +21,8 @@ export default function Home() {
 
   return (
     <main className="text-slate-900">
-      {/* ───────── Hero — cool blue gradient ───────── */}
-      <section className="relative overflow-hidden bg-[linear-gradient(180deg,#eff6ff_0%,#ffffff_70%)] px-6 pb-20 pt-16 sm:px-8 sm:pt-20 lg:pb-28 lg:pt-24">
+      {/* ───────── Hero — gradient with light/dark variants in globals.css ───────── */}
+      <section className="hero-band relative overflow-hidden px-6 pb-20 pt-16 sm:px-8 sm:pt-20 lg:pb-28 lg:pt-24">
         <div className="mx-auto max-w-5xl text-center">
           <span className="inline-flex rounded-full bg-sky-50 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-sky-700 ring-1 ring-sky-200/60">
             For CS students applying to SWE internships
@@ -72,14 +72,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ───────── How it works — warm amber ───────── */}
+      {/* ───────── How it works — neutral light gray ───────── */}
       <section
         id="how-it-works"
-        className="bg-amber-50 px-6 py-20 sm:px-8 lg:py-24"
+        className="bg-slate-100 px-6 py-20 sm:px-8 lg:py-24"
       >
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
               How it works
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
@@ -111,9 +111,9 @@ export default function Home() {
             ].map(({ step, title, body }) => (
               <div
                 key={step}
-                className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-amber-100"
+                className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-200"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 font-mono text-sm font-semibold text-amber-700">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 font-mono text-sm font-semibold text-slate-700 ring-1 ring-slate-200">
                   {step}
                 </div>
                 <h3 className="mt-5 text-xl font-semibold tracking-tight text-slate-950">
@@ -199,7 +199,7 @@ export default function Home() {
           <div className="mt-9 flex flex-wrap justify-center gap-3">
             <Link
               href="/apply"
-              className="rounded-full bg-white px-7 py-3.5 text-sm font-semibold !text-[#0a0a0f] transition hover:bg-slate-100"
+              className="rounded-full bg-[#ffffff] px-7 py-3.5 text-sm font-semibold !text-[#0a0a0f] transition hover:bg-slate-100"
             >
               Start my draft
             </Link>

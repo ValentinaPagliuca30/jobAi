@@ -173,8 +173,9 @@ export default function ProfilePage() {
             </button>
           </div>
           <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
-            Keep this page structured and calm: basic information, uploads, and
-            reusable answers. Click one section and show only that section.
+            Fill this in once. Every time you paste a job link, JobPilot pulls
+            from your profile, resume, and writing samples — then the AI
+            tailors a cover letter and short-answer drafts to the specific role.
           </p>
           {statusMessage ? (
             <p className="mt-5 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
@@ -183,8 +184,8 @@ export default function ProfilePage() {
           ) : null}
           {hasLoadError ? (
             <p className="mt-3 rounded-2xl bg-[var(--peach)] px-4 py-3 text-sm text-[var(--ink)]">
-              Run `supabase/profile-migration.sql` in Supabase to align the
-              profile tables with the Clerk-based schema.
+              We couldn&rsquo;t load your profile. Refresh the page in a
+              moment — if it keeps happening, sign out and back in.
             </p>
           ) : null}
         </section>
@@ -201,11 +202,11 @@ export default function ProfilePage() {
                   className={
                     isActive
                       ? "rounded-2xl bg-slate-950 px-5 py-4 text-left text-white"
-                      : "rounded-2xl bg-slate-50 px-5 py-4 text-left text-slate-900 transition hover:bg-slate-100"
+                      : "rounded-2xl bg-sky-50 px-5 py-4 text-left text-slate-900 ring-1 ring-sky-100 transition hover:bg-sky-100"
                   }
                 >
                   <div className="text-sm font-semibold">{tab.title}</div>
-                  <div className={isActive ? "mt-1 text-sm text-white/70" : "mt-1 text-sm text-slate-500"}>
+                  <div className={isActive ? "mt-1 text-sm opacity-70" : "mt-1 text-sm text-slate-500"}>
                     {tab.description}
                   </div>
                 </button>

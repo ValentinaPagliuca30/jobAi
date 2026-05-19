@@ -42,7 +42,7 @@ export default async function SucceedPage() {
       <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
         <div className="mx-auto flex w-full max-w-7xl flex-col px-6 py-10 sm:px-8 lg:px-10">
           <section className="rounded-[2rem] border border-slate-200 bg-white px-7 py-8 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">
               Succeed
             </p>
             <h1 className="mt-3 text-4xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-5xl">
@@ -101,24 +101,24 @@ export default async function SucceedPage() {
           </div>
 
           <div className="mt-7 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
                 Total submitted
               </p>
               <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
                 {applications.length}
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
                 This month
               </p>
               <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
                 {thisMonthCount}
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
                 Months tracked
               </p>
               <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
@@ -212,8 +212,15 @@ export default async function SucceedPage() {
           ) : (
             <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center">
               <p className="text-sm leading-7 text-slate-600">
-                No submitted applications yet. Finish one application and press
-                submit from its detail page to save it here.
+                You haven&rsquo;t submitted any applications yet. Start one
+                from{" "}
+                <a href="/apply" className="font-medium text-sky-700 underline">
+                  /apply
+                </a>{" "}
+                — paste a Greenhouse or Lever link, generate your draft, send
+                it on the company&rsquo;s page, then click{" "}
+                <strong>Mark submitted</strong> on the application detail to
+                save the record here.
               </p>
             </div>
           )}

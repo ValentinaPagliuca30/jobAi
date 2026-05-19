@@ -49,7 +49,7 @@ export default async function DraftsPage() {
       <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] text-slate-900">
         <div className="mx-auto flex w-full max-w-7xl flex-col px-6 py-10 sm:px-8 lg:px-10">
           <section className="rounded-[2rem] border border-slate-200 bg-white px-7 py-8 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">
               Drafts
             </p>
             <h1 className="mt-3 text-4xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-5xl">
@@ -97,24 +97,24 @@ export default async function DraftsPage() {
           </div>
 
           <div className="mt-7 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <div className="rounded-2xl border border-amber-100 bg-amber-50 px-5 py-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
                 Open drafts
               </p>
               <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
                 {drafts.length}
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <div className="rounded-2xl border border-amber-100 bg-amber-50 px-5 py-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
                 This month
               </p>
               <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
                 {thisMonthCount}
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <div className="rounded-2xl border border-amber-100 bg-amber-50 px-5 py-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
                 Months tracked
               </p>
               <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
@@ -128,7 +128,7 @@ export default async function DraftsPage() {
               {monthly.map((entry) => (
                 <span
                   key={entry.key}
-                  className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700"
+                  className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700"
                 >
                   {entry.label} · {entry.count}
                 </span>

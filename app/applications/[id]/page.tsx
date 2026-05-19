@@ -9,6 +9,7 @@ import { loadProfileForUser } from "@/lib/profile-store";
 import { answerBlockDefinitions } from "@/lib/profile";
 import { ApplicationPrep } from "./application-prep";
 import { ApplicationQuestions } from "./application-questions";
+import { AutofillInstructions } from "./autofill-instructions";
 import { CoverLetter } from "./cover-letter";
 import { SubmitApplicationButton } from "./submit-application-button";
 
@@ -287,6 +288,11 @@ export default async function ApplicationDetailPage({
               profileAnswers={profile.applicationAnswers}
               canGenerate={canGenerate}
               generateBlockedReason={generateBlockedReason}
+            />
+
+            <AutofillInstructions
+              applicationId={application.id}
+              clerkUserId={userId}
             />
 
             <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">

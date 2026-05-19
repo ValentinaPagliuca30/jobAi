@@ -125,6 +125,17 @@
 }
 
 @layer components {
+  /* Homepage hero band — pale blue gradient in light mode, near-black in
+     dark. Defined here (not as an inline `bg-[linear-gradient(...)]` utility)
+     so it respects the theme instead of overriding the dark-mode background
+     and making rescued white text invisible. */
+  .hero-band {
+    background: linear-gradient(180deg, #eff6ff 0%, #ffffff 70%);
+  }
+  [data-theme="dark"] .hero-band {
+    background: linear-gradient(180deg, #0a0a0f 0%, #000000 70%);
+  }
+
   .app-topbar {
     position: sticky;
     top: 0;
@@ -253,11 +264,14 @@
 [data-theme="dark"] .text-slate-900 {
   color: var(--ink) !important;
 }
+[data-theme="dark"] .text-slate-800 {
+  color: #e5e5ea !important;
+}
 [data-theme="dark"] .text-slate-700 {
   color: #d2d2d7 !important;
 }
 [data-theme="dark"] .text-slate-600 {
-  color: #aeaeb2 !important;
+  color: #c7c7cc !important;
 }
 [data-theme="dark"] .text-slate-500,
 [data-theme="dark"] .text-slate-400 {
@@ -266,7 +280,7 @@
 
 [data-theme="dark"] .border-slate-200,
 [data-theme="dark"] .border-slate-100 {
-  border-color: var(--line) !important;
+  border-color: var(--line-strong) !important;
 }
 
 [data-theme="dark"] .text-sky-700 {

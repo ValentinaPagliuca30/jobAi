@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   calibrationQuestions,
   type ApplicationAnswerRecord,
@@ -41,6 +41,16 @@ export function ApplicationPrep({
   const [isSavingAnswers, setIsSavingAnswers] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const calibrationFilled = useMemo(
+    () =>
+      calibrationQuestions.reduce(
+        (count, q) => count + ((answers[q.key] ?? "").trim() === "" ? 0 : 1),
+        0,
+      ),
+    [answers],
+  );
+  const calibrationTotal = calibrationQuestions.length;
 
   async function handleResumeChange(nextValue: string) {
     const nextResumeId = nextValue === "" ? null : nextValue;
@@ -175,6 +185,16 @@ export function ApplicationPrep({
             </label>
           ))}
         </div>
+
+        {calibrationFilled < calibrationTotal ? (
+          <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <span className="font-semibold">
+              {calibrationFilled}/{calibrationTotal} answered.
+            </span>{" "}
+            Drafts use these to match your voice — filling all{" "}
+            {calibrationTotal} makes a real difference.
+          </p>
+        ) : null}
       </div>
 
       {statusMessage ? (
