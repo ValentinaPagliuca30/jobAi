@@ -10,6 +10,7 @@ import { ApplicationPrep } from "./application-prep";
 import { ApplicationQuestions } from "./application-questions";
 import { AutofillInstructions } from "./autofill-instructions";
 import { CoverLetter } from "./cover-letter";
+import { MatchRationale } from "./match-rationale";
 import { SubmitApplicationButton } from "./submit-application-button";
 
 type ApplicationDetailPageProps = {
@@ -140,6 +141,14 @@ export default async function ApplicationDetailPage({
               {application.jobDescription || "Job description not captured."}
             </p>
           </div>
+
+          <MatchRationale
+            applicationId={application.id}
+            initialDraft={application.matchRationaleDraft}
+            initialGeneratedAt={application.matchRationaleGeneratedAt}
+            canGenerate={canGenerate}
+            generateBlockedReason={generateBlockedReason}
+          />
 
           <ApplicationPrep
             applicationId={application.id}

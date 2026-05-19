@@ -91,6 +91,8 @@ function makeJob(overrides: Partial<JobApplicationRecord>): JobApplicationRecord
     coverLetterDraft: null,
     coverLetterEdited: null,
     coverLetterGeneratedAt: null,
+    matchRationaleDraft: null,
+    matchRationaleGeneratedAt: null,
     createdAt: ts(),
     updatedAt: ts(),
     ...overrides,

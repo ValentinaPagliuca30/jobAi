@@ -57,6 +57,8 @@ function makeJob(
     coverLetterDraft: null,
     coverLetterEdited: null,
     coverLetterGeneratedAt: null,
+    matchRationaleDraft: null,
+    matchRationaleGeneratedAt: null,
     createdAt: "2026-05-01T00:00:00Z",
     updatedAt: "2026-05-01T00:00:00Z",
     ...overrides,

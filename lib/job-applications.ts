@@ -15,6 +15,8 @@ export type JobApplicationRecord = {
   coverLetterDraft: string | null;
   coverLetterEdited: string | null;
   coverLetterGeneratedAt: string | null;
+  matchRationaleDraft: string | null;
+  matchRationaleGeneratedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -47,13 +49,21 @@ function mapJobApplicationRecord(
       typeof row.cover_letter_generated_at === "string"
         ? row.cover_letter_generated_at
         : null,
+    matchRationaleDraft:
+      typeof row.match_rationale_draft === "string"
+        ? row.match_rationale_draft
+        : null,
+    matchRationaleGeneratedAt:
+      typeof row.match_rationale_generated_at === "string"
+        ? row.match_rationale_generated_at
+        : null,
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   };
 }
 
 const baseSelect =
-  "id, clerk_user_id, company_name, job_title, job_url, ats_type, job_description, location, status, applied_at, selected_resume_id, cover_letter_draft, cover_letter_edited, cover_letter_generated_at, created_at, updated_at";
+  "id, clerk_user_id, company_name, job_title, job_url, ats_type, job_description, location, status, applied_at, selected_resume_id, cover_letter_draft, cover_letter_edited, cover_letter_generated_at, match_rationale_draft, match_rationale_generated_at, created_at, updated_at";
 
 export async function createJobApplication(input: {
   clerkUserId: string;
@@ -202,6 +212,30 @@ export async function setCoverLetterDraft(input: {
     .update({
       cover_letter_draft: input.draft,
       cover_letter_generated_at: new Date().toISOString(),
+    })
+    .eq("clerk_user_id", input.clerkUserId)
+    .eq("id", input.applicationId)
+    .select(baseSelect)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return mapJobApplicationRecord(data);
+}
+
+export async function setMatchRationaleDraft(input: {
+  clerkUserId: string;
+  applicationId: string;
+  draft: string;
+}) {
+  const supabase = getSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from(tableName)
+    .update({
+      match_rationale_draft: input.draft,
+      match_rationale_generated_at: new Date().toISOString(),
     })
     .eq("clerk_user_id", input.clerkUserId)
     .eq("id", input.applicationId)
