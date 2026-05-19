@@ -72,14 +72,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ───────── How it works — neutral light gray ───────── */}
+      {/* ───────── How it works — warm amber ───────── */}
       <section
         id="how-it-works"
-        className="bg-slate-100 px-6 py-20 sm:px-8 lg:py-24"
+        className="bg-amber-50 px-6 py-20 sm:px-8 lg:py-24"
       >
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">
               How it works
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
@@ -111,9 +111,9 @@ export default function Home() {
             ].map(({ step, title, body }) => (
               <div
                 key={step}
-                className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-200"
+                className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-amber-100"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 font-mono text-sm font-semibold text-slate-700 ring-1 ring-slate-200">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 font-mono text-sm font-semibold text-amber-700">
                   {step}
                 </div>
                 <h3 className="mt-5 text-xl font-semibold tracking-tight text-slate-950">

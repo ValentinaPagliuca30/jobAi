@@ -321,6 +321,13 @@
   background-color: var(--surface-soft) !important;
 }
 
+/* Homepage "How it works" band — in dark mode match the topbar tint so
+   the page reads as one continuous dark surface broken only by the
+   white cards inside. */
+[data-theme="dark"] #how-it-works {
+  background-color: var(--topbar-bg) !important;
+}
+
 /* Dark-mode treatment of the dark "primary action" buttons used inline on
    pages (Continue / New draft / Show submitted). In dark mode we flip them to
    white so the button remains the highest-contrast element on the page. */
